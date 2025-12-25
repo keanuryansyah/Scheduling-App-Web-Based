@@ -1,0 +1,118 @@
+/* File: public/css/login.css */
+* {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --brand-logo-blue: #0077B6;
+    --brand-logo-yellow: #D98604;
+}
+
+body {
+    background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+}
+
+.login-wrapper {
+    width: 100%;
+    max-width: 400px;
+    padding: 20px;
+}
+
+.login-card {
+    background: #ffffff;
+    padding: 40px;
+    border-radius: 16px;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.brand-logo {
+    font-size: 28px;
+    font-weight: 800;
+    color: #0077B6;
+}
+
+.brand-logo span {
+    color: #1f2937;
+}
+
+/* h3.kn-welcome-text {
+    margin-bottom: .5rem;
+    color: #1f2937;
+}
+
+.subtitle {
+    color: #6b7280;
+    margin-bottom: 1rem;
+} */
+
+.kn-logo-login-form {
+    margin-bottom: 2rem;
+}
+
+.form-group {
+    margin-bottom: .5rem;
+    text-align: left;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #374151;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    box-sizing: border-box; /* Agar padding tidak merusak lebar */
+    outline: none;
+    transition: all 0.2s;
+}
+
+.form-group input:focus {
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.btn-login {
+    width: 100%;
+    padding: 12px;
+    background-color: var(--brand-logo-blue);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    margin-top: 10px;
+}
+
+.btn-login:hover {
+    background-color: var(--brand-logo-yellow);
+}
+
+.error-msg {
+    color: #ef4444;
+    font-size: 12px;
+    margin-top: 5px;
+    margin-bottom: .5rem;
+}
+
+.is-invalid {
+    border-color: #ef4444 !important;
+    background-color: #fff5f5;
+}

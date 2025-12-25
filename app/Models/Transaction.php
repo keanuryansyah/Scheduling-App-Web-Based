@@ -1,0 +1,24 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Transaction extends Model
+{
+    protected $fillable = [
+        'user_id',
+        'job_id',
+        'amount',
+        'type',
+        'description',
+        'transaction_date'
+    ];
+
+    
+    public $timestamps = false;
+
+    public function user() { return $this->belongsTo(User::class); }
+    public function job() { return $this->belongsTo(Job::class); }
+}
+
