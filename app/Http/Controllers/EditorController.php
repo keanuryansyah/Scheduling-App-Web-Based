@@ -24,7 +24,8 @@ class EditorController extends Controller
                           $q->where('user_id', $editorId);
                       });
             })
-            ->orderBy('job_date', 'desc')
+            ->orderBy('job_date', 'asc')
+            ->orderBy('start_time', 'asc')
             ->get();
 
         // 2. JOB SELESAI (Completed - Hanya milik saya)

@@ -153,16 +153,7 @@
                             {{ $job->type->job_type_name }}
                         </span>
 
-                        <!-- 2. Badge Status Utama -->
-                        @if($job->status == 'scheduled')
-                        <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25">Terjadwal</span>
-                        @elseif($job->status == 'ongoing')
-                        <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25">Proses Lapangan</span>
-                        @elseif($job->status == 'done')
-                        <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25">Selesai Lapangan</span>
-                        @endif
-
-                        <!-- 3. Badge Status Editor -->
+                        <!-- 2. Badge Status Editor -->
                         @if($job->status == 'done' || $job->editor_status != 'idle')
                         @if($job->editor_status == 'idle')
                         <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25"><i class="bi bi-hourglass-split"></i> Menunggu Editor</span>
@@ -172,6 +163,28 @@
                         <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25"><i class="bi bi-check-all"></i> Editing Selesai</span>
                         @endif
                         @endif
+
+                        <!-- 3. Badge Status Utama -->
+                        @if($job->status == 'scheduled')
+                        <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary">Terjadwal</span>
+
+                        @elseif($job->status == 'otw')
+                        <span class="badge bg-primary text-white"><i class="bi bi-scooter"></i> OTW</span>
+
+                        @elseif($job->status == 'arrived')
+                        <span class="badge bg-info text-white"><i class="bi bi-geo-alt-fill"></i> Sampai</span>
+
+                        @elseif($job->status == 'ongoing')
+                        <span class="badge bg-warning text-dark"><i class="bi bi-play-fill"></i>Sedang Kerja</span>
+
+                        @elseif($job->status == 'done')
+                        @if($job->editor_status == 'completed')
+                        <span class="badge bg-success"><i class="bi bi-check-lg"></i>Selesai</span>
+                        @endif
+                        @elseif($job->status == 'canceled')
+                        <span class="badge bg-dark">Batal</span>
+                        @endif
+
                     </div>
                 </div>
             </div>
@@ -371,6 +384,115 @@
                     </div>
                 </div>
 
+                <!-- CARD 3: TIMELINE PENGERJAAN -->
+                <div class="card card-modern mt-4">
+                    <div class="card-header-modern d-flex justify-content-between align-items-center">
+                        <h6 class="fw-bold mb-0 text-uppercase ls-1 text-dark">
+                            <i class="bi bi-clock-history me-2"></i> Timeline Crew
+                        </h6>
+
+                        <!-- Status Live -->
+                        @if($job->status == 'ongoing')
+                        <span class="badge bg-warning text-dark blink">LIVE</span>
+                        <style>
+                            .blink {
+                                animation: blinker 1.5s linear infinite;
+                            }
+
+                            @keyframes blinker {
+                                50% {
+                                    opacity: 0;
+                                }
+                            }
+                        </style>
+                        @endif
+                    </div>
+                    <div class="card-body p-0">
+                        <ul class="list-group list-group-flush">
+
+                            <!-- 1. OTW -->
+                            <li class="list-group-item p-3 d-flex justify-content-between align-items-center {{ $job->otw_at ? 'bg-light' : '' }}">
+                                <div class="d-flex align-items-center">
+                                    <div class="icon-box {{ $job->otw_at ? 'bg-primary text-white' : 'bg-secondary text-white opacity-25' }}" style="width: 32px; height: 32px; border-radius: 50%;">
+                                        <i class="bi bi-scooter"></i>
+                                    </div>
+                                    <div>
+                                        <span class="d-block fw-bold {{ $job->otw_at ? 'text-dark' : 'text-muted' }}">Berangkat (OTW)</span>
+                                        @if($job->otw_at)
+                                        <small class="text-muted">{{ $job->otw_at->translatedFormat('d M Y') }}</small>
+                                        @endif
+                                    </div>
+                                </div>
+                                <span class="fw-bold {{ $job->otw_at ? 'text-primary' : 'text-muted' }}">
+                                    {{ $job->otw_at ? $job->otw_at->format('H:i') : '--:--' }}
+                                </span>
+                            </li>
+
+                            <!-- 2. ARRIVED -->
+                            <li class="list-group-item p-3 d-flex justify-content-between align-items-center {{ $job->arrived_at ? 'bg-light' : '' }}">
+                                <div class="d-flex align-items-center">
+                                    <div class="icon-box {{ $job->arrived_at ? 'bg-info text-white' : 'bg-secondary text-white opacity-25' }}" style="width: 32px; height: 32px; border-radius: 50%;">
+                                        <i class="bi bi-geo-alt-fill"></i>
+                                    </div>
+                                    <div>
+                                        <span class="d-block fw-bold {{ $job->arrived_at ? 'text-dark' : 'text-muted' }}">Sampai Lokasi</span>
+                                    </div>
+                                </div>
+                                <span class="fw-bold {{ $job->arrived_at ? 'text-info' : 'text-muted' }}">
+                                    {{ $job->arrived_at ? $job->arrived_at->format('H:i') : '--:--' }}
+                                </span>
+                            </li>
+
+                            <!-- 3. STARTED -->
+                            <li class="list-group-item p-3 d-flex justify-content-between align-items-center {{ $job->started_at ? 'bg-light' : '' }}">
+                                <div class="d-flex align-items-center">
+                                    <div class="icon-box {{ $job->started_at ? 'bg-warning text-dark' : 'bg-secondary text-white opacity-25' }}" style="width: 32px; height: 32px; border-radius: 50%;">
+                                        <i class="bi bi-play-fill"></i>
+                                    </div>
+                                    <div>
+                                        <span class="d-block fw-bold {{ $job->started_at ? 'text-dark' : 'text-muted' }}">Mulai Kerja</span>
+                                    </div>
+                                </div>
+                                <span class="fw-bold {{ $job->started_at ? 'text-warning' : 'text-muted' }}">
+                                    {{ $job->started_at ? $job->started_at->format('H:i') : '--:--' }}
+                                </span>
+                            </li>
+
+                            <!-- 4. FINISHED -->
+                            <li class="list-group-item p-3 d-flex justify-content-between align-items-center {{ $job->finished_at ? 'bg-light' : '' }}">
+                                <div class="d-flex align-items-center">
+                                    <div class="icon-box {{ $job->finished_at ? 'bg-success text-white' : 'bg-secondary text-white opacity-25' }}" style="width: 32px; height: 32px; border-radius: 50%;">
+                                        <i class="bi bi-check-lg"></i>
+                                    </div>
+                                    <div>
+                                        <span class="d-block fw-bold {{ $job->finished_at ? 'text-dark' : 'text-muted' }}">Selesai</span>
+                                    </div>
+                                </div>
+                                <span class="fw-bold {{ $job->finished_at ? 'text-success' : 'text-muted' }}">
+                                    {{ $job->finished_at ? $job->finished_at->format('H:i') : '--:--' }}
+                                </span>
+                            </li>
+
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="col-12 mt-2 pt-3 border-top border-light">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <span class="label-text mb-0"><i class="bi bi-pencil-square me-1"></i> Added By: </span>
+
+                        @if($job->creator->role->name == 'boss')
+                        <span class="badge bg-danger bg-opacity-10 text-danger border border-danger px-3 py-2 rounded-pill">
+                            <i class="bi bi-suit-tie-fill me-1"></i> BOSS
+                        </span>
+                        @else
+                        <span class="badge bg-info bg-opacity-10 text-info border border-info px-3 py-2 rounded-pill">
+                            <i class="bi bi-person-badge-fill me-1"></i> ADMIN: {{ $job->creator->name }}
+                        </span>
+                        @endif
+                    </div>
+                </div>
+
 
             </div>
 
@@ -387,6 +509,18 @@
                             @if($job->payment_method == 'unpaid')
                             <span class="text-danger fw-bold text-uppercase small" style="letter-spacing: 0.5px;">
                                 <i class="bi bi-hourglass-split me-1"></i> Belum Lunas
+                            </span>
+                            @elseif($job->payment_method == 'tf' && $job->amount == '0.00')
+                            <span class="text-danger fw-bold text-uppercase small" style="letter-spacing: 0.5px;">
+                                <i class="bi bi-hourglass-split me-1"></i> Belum Lunas ({{$job->payment_method}})
+                            </span>
+                            @elseif($job->payment_method == 'cash' && $job->amount == '0.00')
+                            <span class="text-danger fw-bold text-uppercase small" style="letter-spacing: 0.5px;">
+                                <i class="bi bi-hourglass-split me-1"></i> Belum Lunas ({{$job->payment_method}})
+                            </span>
+                            @elseif($job->payment_method == 'vendor' && $job->amount == '0.00')
+                            <span class="text-danger fw-bold text-uppercase small" style="letter-spacing: 0.5px;">
+                                <i class="bi bi-hourglass-split me-1"></i> Belum Lunas ({{$job->payment_method}})
                             </span>
                             @else
                             <span class="text-success fw-bold text-uppercase small" style="letter-spacing: 0.5px;">
@@ -445,92 +579,143 @@
 
 
                 <!-- CARD LINK -->
+                <!-- CARD LINK -->
                 <div class="card card-modern">
-                    <div class="card-header-modern bg-primary bg-opacity-10">
-                        <h6 class="fw-bold mb-0 text-uppercase ls-1 text-primary">Link Hasil (GDrive)</h6>
+                    <div class="card-header-modern bg-primary bg-opacity-10 d-flex justify-content-between align-items-center">
+                        <h6 class="fw-bold mb-0 text-uppercase ls-1 text-primary">Link Hasil</h6>
+
+                        {{-- ICON LOCK --}}
+                        <i id="lockIcon" class="bi {{ $job->amount == 0.00 ? 'bi-lock-fill text-danger' : 'bi-unlock-fill text-success' }} fs-5"></i>
                     </div>
+
                     <div class="card-body p-4">
 
-                        @if($job->editor_status == 'editing')
-                        <div class="text-center py-3">
-                            <div class="spinner-border text-warning mb-2" role="status"></div>
-                            <h6 class="fw-bold text-dark">Sedang Proses Edit</h6>
-                            <p class="small text-muted mb-0">Editor sedang bekerja...</p>
-                        </div>
+                        {{-- ========================= --}}
+                        {{-- 1️⃣ DONE + COMPLETED --}}
+                        {{-- ========================= --}}
+                        @if($job->status === 'done' && $job->editor_status === 'completed')
 
-                        @elseif($job->result_link)
-                        <!-- TAMPILAN LINK SUDAH ADA -->
-                        <div class="mb-3">
-                            <label class="small text-muted fw-bold mb-1">Link Tersedia:</label>
-                            <div class="input-group">
-                                <input type="text" class="form-control form-control-copy" value="{{ $job->result_link }}" id="resultLink" readonly>
-                                <button class="btn btn-light border" onclick="copyLink()" title="Copy">
-                                    <i class="bi bi-clipboard"></i>
-                                </button>
-                            </div>
-                        </div>
+                        @php
+                        $isLocked = ($job->amount == 0.00);
+                        $isPrivileged = in_array(auth()->user()->role->name, ['admin', 'boss']);
+                        @endphp
 
-                        <!-- Tombol Aksi -->
-                        <div class="d-grid gap-2 mb-3">
-                            <a href="{{ $job->result_link }}" target="_blank" class="btn btn-primary fw-bold">
-                                <i class="bi bi-folder2-open me-2"></i> Buka Link
-                            </a>
+                        <p id="lockText" class="small text-muted text-center mb-3">
+                            {{ $isLocked
+                ? 'Link dikunci untuk saat ini. Klien harus menyelesaikan administrasi terlebih dahulu.'
+                : 'Link sedang terbuka dan dapat diakses.'
+            }}
+                        </p>
 
-                            @php
-                            $hp = substr($job->client_phone, 0, 1) == '0' ? '62'.substr($job->client_phone, 1) : $job->client_phone;
-                            $msg = "Halo Kak {$job->client_name}, ini link hasil dokumentasi acara {$job->job_title}:\n\n" . $job->result_link . "\n\nTerima kasih!";
-                            @endphp
-                            <a href="https://wa.me/{{ $hp }}?text={{ urlencode($msg) }}" target="_blank" class="btn btn-success fw-bold">
-                                <i class="bi bi-whatsapp me-2"></i> Kirim WA
-                            </a>
-                        </div>
-
-                        <!-- FITUR UPDATE LINK (Collapsible) -->
-                        <div class="border-top pt-3 mt-2">
-                            <button class="btn btn-sm btn-link text-decoration-none text-secondary w-100" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEditLink">
-                                <i class="bi bi-pencil-square"></i> Revisi / Ubah Link
+                        @if($isPrivileged)
+                        <div class="d-flex justify-content-center gap-2 mb-3">
+                            <button id="unlockBtn"
+                                class="btn btn-sm btn-outline-primary fw-bold {{ !$isLocked ? 'd-none' : '' }}"
+                                onclick="toggleLink(true)">
+                                <i class="bi bi-unlock-fill me-1"></i> Buka Kunci
                             </button>
 
-                            <div class="collapse mt-2" id="collapseEditLink">
-                                <form action="{{ route('jobs.updateLink', $job->id) }}" method="POST" class="bg-light p-3 rounded border">
-                                    @csrf
-                                    @method('PUT')
-                                    <label class="small fw-bold text-dark mb-1">Masukkan Link Baru:</label>
-                                    <div class="input-group">
-                                        <input type="url" name="result_link" class="form-control form-control-sm" value="{{ $job->result_link }}" required>
-                                        <button class="btn btn-sm btn-dark">Simpan</button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-
-                        @else
-                        <!-- BELUM ADA LINK -->
-                        <div class="text-center py-3">
-                            <i class="bi bi-hourglass-top fs-1 text-secondary opacity-50"></i>
-                            <p class="small text-muted mt-2 mb-3">Menunggu Editor memulai...</p>
-
-                            <!-- Boss mau input manual linknya? -->
-                            <button class="btn btn-sm btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapseManualLink">
-                                + Input Manual
+                            <button id="lockBtn"
+                                class="btn btn-sm btn-outline-danger fw-bold {{ $isLocked ? 'd-none' : '' }}"
+                                onclick="toggleLink(false)">
+                                <i class="bi bi-lock-fill me-1"></i> Kunci
                             </button>
-
-                            <div class="collapse mt-3" id="collapseManualLink">
-                                <form action="{{ route('jobs.updateLink', $job->id) }}" method="POST">
-                                    @csrf
-                                    @method('PUT')
-                                    <div class="input-group">
-                                        <input type="url" name="result_link" class="form-control form-control-sm" placeholder="https://..." required>
-                                        <button class="btn btn-sm btn-primary">Simpan</button>
-                                    </div>
-                                </form>
-                            </div>
                         </div>
                         @endif
 
-                    </div>
-                </div>
+                        <div id="linkArea" class="{{ $isLocked ? 'd-none' : '' }}">
 
+                            {{-- LINK --}}
+                            <div class="mb-3">
+                                <label class="small text-muted fw-bold mb-1">Link Hasil:</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control form-control-copy"
+                                        id="resultLink"
+                                        value="{{ $job->result_link }}"
+                                        readonly>
+                                    <button class="btn btn-light border" onclick="copyLink()">
+                                        <i class="bi bi-clipboard"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            {{-- ACTION --}}
+                            <div class="d-grid gap-2 mb-3">
+                                <a href="{{ $job->result_link }}" target="_blank"
+                                    class="btn btn-primary fw-bold">
+                                    <i class="bi bi-folder2-open me-2"></i> Buka Link
+                                </a>
+
+                                @php
+                                $hp = substr($job->client_phone, 0, 1) == '0'
+                                ? '62'.substr($job->client_phone, 1)
+                                : $job->client_phone;
+
+                                $msg = "Halo Kak {$job->client_name}, ini link hasil dokumentasi acara {$job->job_title}:\n\n{$job->result_link}\n\nTerima kasih!";
+                                @endphp
+
+                                <a href="https://wa.me/{{ $hp }}?text={{ urlencode($msg) }}"
+                                    target="_blank"
+                                    class="btn btn-success fw-bold">
+                                    <i class="bi bi-whatsapp me-2"></i> Kirim WA
+                                </a>
+                            </div>
+
+                            {{-- REVISI LINK --}}
+                            @if($isPrivileged)
+                            <form action="{{ route('jobs.updateLink', $job->id) }}"
+                                method="POST"
+                                class="border-top pt-3">
+                                @csrf
+                                @method('PUT')
+
+                                <label class="small fw-bold text-muted mb-1">
+                                    Revisi / Ganti Link:
+                                </label>
+                                <input type="url"
+                                    name="result_link"
+                                    class="form-control form-control-sm mb-2"
+                                    required>
+
+                                <button class="btn btn-dark btn-sm w-100 fw-bold">
+                                    <i class="bi bi-arrow-repeat me-1"></i> Simpan Revisi
+                                </button>
+                            </form>
+                            @endif
+
+                        </div>
+
+                        {{-- ========================= --}}
+                        {{-- 2️⃣ CANCELED --}}
+                        {{-- ========================= --}}
+                        @elseif($job->status === 'canceled')
+
+                        <div class="text-center py-4">
+                            <i class="bi bi-x-circle-fill text-danger fs-1 mb-3"></i>
+                            <h6 class="fw-bold text-danger mb-2">Job Dibatalkan</h6>
+                            <p class="small text-muted mb-0">
+                                Link hasil tidak tersedia karena job ini telah dibatalkan.
+                            </p>
+                        </div>
+
+                        {{-- ========================= --}}
+                        {{-- 3️⃣ STATUS LAIN --}}
+                        {{-- ========================= --}}
+                        @else
+
+                        <div class="text-center py-4">
+                            <i class="bi bi-hourglass-split text-muted fs-1 mb-3"></i>
+                            <h6 class="fw-bold text-muted mb-2">Link Belum Tersedia</h6>
+                            <p class="small text-muted mb-0">
+                                Link hasil akan tersedia setelah pekerjaan selesai dan editing diselesaikan.
+                            </p>
+                        </div>
+
+                        @endif
+
+                    </div>
+
+                </div>
             </div>
         </div>
     </div>
@@ -539,14 +724,38 @@
 
     <!-- Script Copy -->
     <script>
+        function toggleLink(open) {
+            const linkArea = document.getElementById('linkArea');
+            const lockIcon = document.getElementById('lockIcon');
+            const lockText = document.getElementById('lockText');
+            const unlockBtn = document.getElementById('unlockBtn');
+            const lockBtn = document.getElementById('lockBtn');
+
+            if (open) {
+                linkArea.classList.remove('d-none');
+                lockIcon.className = 'bi bi-unlock-fill text-success fs-5';
+                lockText.innerText = 'Link sedang terbuka dan dapat diakses.';
+                unlockBtn.classList.add('d-none');
+                lockBtn.classList.remove('d-none');
+            } else {
+                linkArea.classList.add('d-none');
+                lockIcon.className = 'bi bi-lock-fill text-danger fs-5';
+                lockText.innerText = 'Link dikunci untuk saat ini. Klien harus menyelesaikan administrasi terlebih dahulu.';
+                unlockBtn.classList.remove('d-none');
+                lockBtn.classList.add('d-none');
+            }
+        }
+
         function copyLink() {
-            var copyText = document.getElementById("resultLink");
+            const copyText = document.getElementById("resultLink");
             copyText.select();
             copyText.setSelectionRange(0, 99999);
             navigator.clipboard.writeText(copyText.value);
             alert("Link berhasil disalin!");
         }
     </script>
+
+
 
 </body>
 

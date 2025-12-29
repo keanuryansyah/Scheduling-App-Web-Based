@@ -73,7 +73,8 @@ class IncomeController extends Controller
         $jobs = $query->with(['type', 'assignments.editor', 'transactions' => function ($q) use ($userId) {
                 $q->where('user_id', $userId);
             }])
-            ->orderBy('job_date', 'desc')
+            ->orderBy('job_date', 'asc')
+            ->orderBy('start_time', 'asc')
             ->get();
 
         

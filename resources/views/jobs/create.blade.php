@@ -220,52 +220,52 @@
         flatpickr("#endTime", timeConfig);
 
         // 2. FUNGSI CEK BENTROK
-        async function checkAvailability() {
-            const date = jobDateInput.value;
-            const start = startTimeInput.value;
-            const end = endTimeInput.value;
+        // async function checkAvailability() {
+        //     const date = jobDateInput.value;
+        //     const start = startTimeInput.value;
+        //     const end = endTimeInput.value;
 
-            // Reset dropdown dulu
-            document.querySelectorAll('.user-select option').forEach(opt => {
-                if (opt.value) {
-                    opt.disabled = false;
-                    opt.text = opt.text.replace(' (Sibuk)', '');
-                }
-            });
+        //     // Reset dropdown dulu
+        //     document.querySelectorAll('.user-select option').forEach(opt => {
+        //         if (opt.value) {
+        //             opt.disabled = false;
+        //             opt.text = opt.text.replace(' (Sibuk)', '');
+        //         }
+        //     });
 
-            // Hanya jalan kalau Tanggal & Jam diisi lengkap
-            if (date && start && end) {
-                document.getElementById('loadingCheck').classList.remove('d-none');
+        //     // Hanya jalan kalau Tanggal & Jam diisi lengkap
+        //     if (date && start && end) {
+        //         document.getElementById('loadingCheck').classList.remove('d-none');
 
-                try {
-                    const response = await fetch(`{{ route('api.checkAvailability') }}?date=${date}&start=${start}&end=${end}`);
-                    const busyUserIds = await response.json();
+        //         try {
+        //             const response = await fetch(`{{ route('api.checkAvailability') }}?date=${date}&start=${start}&end=${end}`);
+        //             const busyUserIds = await response.json();
 
-                    // Tandai crew yang sibuk
-                    busyUserIds.forEach(id => {
-                        const option = document.getElementById('optUser' + id);
-                        if (option) {
-                            option.disabled = true;
-                            option.text = option.text + ' (Sibuk)';
-                        }
-                    });
+        //             // Tandai crew yang sibuk
+        //             busyUserIds.forEach(id => {
+        //                 const option = document.getElementById('optUser' + id);
+        //                 if (option) {
+        //                     option.disabled = true;
+        //                     option.text = option.text + ' (Sibuk)';
+        //                 }
+        //             });
 
-                    // Reset pilihan jika crew yang dipilih ternyata sibuk
-                    if (crewSelect.value && busyUserIds.includes(parseInt(crewSelect.value))) {
-                        crewSelect.value = "";
-                        alert("Crew yang dipilih ternyata sibuk di jam tersebut!");
-                    }
+        //             // Reset pilihan jika crew yang dipilih ternyata sibuk
+        //             if (crewSelect.value && busyUserIds.includes(parseInt(crewSelect.value))) {
+        //                 crewSelect.value = "";
+        //                 alert("Crew yang dipilih ternyata sibuk di jam tersebut!");
+        //             }
 
-                } catch (error) {
-                    console.error('Error cek jadwal:', error);
-                } finally {
-                    document.getElementById('loadingCheck').classList.add('d-none');
-                }
-            }
-        }
+        //         } catch (error) {
+        //             console.error('Error cek jadwal:', error);
+        //         } finally {
+        //             document.getElementById('loadingCheck').classList.add('d-none');
+        //         }
+        //     }
+        // }
 
-        // Event Listeners (Tanggal tetap pakai change biasa)
-        jobDateInput.addEventListener('change', checkAvailability);
+        // // Event Listeners (Tanggal tetap pakai change biasa)
+        // jobDateInput.addEventListener('change', checkAvailability);
 
         // Note: Event listener untuk Jam sudah dihandle oleh onClose Flatpickr di atas
     </script>

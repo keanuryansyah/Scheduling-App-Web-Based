@@ -22,12 +22,22 @@ class Job extends Model
         'status',
         'editor_status',
         'result_link',
+        'wa_sent_at',
         'created_by',
+        'otw_at',
+        'arrived_at',
+        'started_at',
+        'finished_at'
     ];
 
 
     protected $casts = [
         'job_date' => 'date',
+        'wa_sent_at' => 'datetime',
+        'otw_at' => 'datetime',
+        'arrived_at' => 'datetime',
+        'started_at' => 'datetime',
+        'finished_at' => 'datetime',
     ];
 
     /* ================= RELATIONS ================= */

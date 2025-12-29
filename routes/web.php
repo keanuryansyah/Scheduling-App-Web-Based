@@ -30,7 +30,7 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 //  (Admin bisa akses ini untuk kelola jadwal, tapi Boss juga bisa)
 // =============================================================
 Route::middleware(['auth', 'role:boss,admin'])->group(function () {
-    
+
     // CRUD Job
     Route::get('/jobs/create', [JobController::class, 'create'])->name('jobs.create');
     Route::post('/jobs', [JobController::class, 'store'])->name('jobs.store');
@@ -43,12 +43,18 @@ Route::middleware(['auth', 'role:boss,admin'])->group(function () {
     Route::post('/jobs/{job}/cancel', [JobController::class, 'cancel'])->name('jobs.cancel');
     Route::put('/jobs/{job}/update-link', [JobController::class, 'updateLink'])->name('jobs.updateLink');
     Route::post('/jobs/{job}/update-proof', [JobController::class, 'updateProof'])->name('jobs.updateProof');
-    
+
     // API Helper
     Route::get('/api/check-availability', [JobController::class, 'checkAvailability'])->name('api.checkAvailability');
 
     // Kelola Job Types
     Route::resource('job-types', JobTypeController::class)->only(['index', 'store', 'destroy']);
+
+    Route::get('/jobs/{job}/send-wa', [JobController::class, 'sendWhatsapp'])->name('jobs.sendWa');
+
+    Route::post('/jobs/{job}/confirm-payment', [JobController::class, 'confirmPayment'])->name('jobs.confirmPayment');
+
+    Route::get('/jobs/{job}/mark-wa-sent', [JobController::class, 'markWaSent'])->name('jobs.markWaSent');
 });
 
 
@@ -60,7 +66,6 @@ Route::middleware(['auth', 'role:boss'])->group(function () {
 
     // Kelola User & Gaji (Hanya Boss)
     Route::resource('users', UserController::class);
-    Route::post('/jobs/{job}/confirm-payment', [JobController::class, 'confirmPayment'])->name('jobs.confirmPayment');
 
     // Laporan Income
     Route::get('/boss/income', [IncomeController::class, 'index'])->name('boss.income.index');
@@ -85,9 +90,12 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 Route::middleware(['auth', 'role:crew'])->group(function () {
     Route::get('/my-jobs', [CrewController::class, 'index'])->name('crew.jobs');
     Route::get('/my-jobs/{job}', [CrewController::class, 'show'])->name('crew.show');
-    
+
     Route::post('/jobs/{job}/start', [CrewController::class, 'startJob'])->name('crew.start');
     Route::post('/jobs/{job}/finish', [CrewController::class, 'finishJob'])->name('crew.finish');
+
+    // ROUTE BARU: Update Progress (OTW, Arrived, Start)
+    Route::post('/jobs/{job}/progress/{status}', [CrewController::class, 'updateProgress'])->name('crew.progress');
 });
 
 

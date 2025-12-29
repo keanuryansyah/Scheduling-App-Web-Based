@@ -5,20 +5,46 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Boss</title>
+    <!-- CSS Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
         body {
             background-color: #f3f4f6;
+            font-family: 'Plus Jakarta Sans', sans-serif;
         }
 
+        /* NAVBAR */
+        .navbar-custom {
+            background: white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        /* CARDS */
         .stat-card {
             border: none;
             border-radius: 12px;
             padding: 20px;
             color: white;
+            transition: transform 0.2s;
+            height: 100%;
+            overflow: hidden;
+            position: relative;
         }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .stat-card.clickable {
+            cursor: pointer;
+        }
+
+        /* Untuk Card Tagihan */
 
         .bg-indigo {
             background: #4f46e5;
@@ -36,118 +62,68 @@
             background: #ef4444;
         }
 
-        .table-card {
-            border-radius: 12px;
+        /* TABLES */
+        .card-table {
             border: none;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            background: white;
         }
 
-        .avatar {
+        /* RESPONSIVE TABLE FIX */
+        .table thead th,
+        .table tbody td {
+            white-space: nowrap;
+            vertical-align: middle;
+            padding: 12px 16px;
+        }
+
+        .table thead th {
+            background-color: #f8f9fa;
+            color: #64748b;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* AVATAR */
+        .avatar-circle {
             width: 30px;
             height: 30px;
             border-radius: 50%;
             object-fit: cover;
-            background: #ddd;
-            display: inline-block;
-            text-align: center;
-            line-height: 30px;
-            font-size: 12px;
+            background: #e2e8f0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 700;
+            color: #475569;
         }
 
-        .navbar-custom {
-            background: white;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        /* TABS Custom */
+        .nav-tabs .nav-link {
+            border: none;
+            color: #64748b;
+            font-weight: 600;
+            padding: 12px 20px;
         }
 
-        .kn-form-select:focus {
-            box-shadow: none !important;
+        .nav-tabs .nav-link.active {
+            color: #0d6efd;
+            background-color: transparent;
+            border-bottom: 3px solid #0d6efd;
         }
 
-        /* TABLET & MOBILE */
-        @media (max-width: 992px) {
-
-            /* Navbar rapih turun */
-            .navbar .container {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 10px;
+        /* Mobile Optimization */
+        @media (max-width: 768px) {
+            .stat-card h2 {
+                font-size: 1.5rem;
             }
 
-            .navbar .kn-header-1 {
-                flex-wrap: wrap;
-                gap: 10px;
-            }
-
-            /* Filter turun ke bawah */
-            form[action*="boss.dashboard"] {
-                flex-wrap: wrap !important;
-                gap: 8px;
-            }
-
-            /* Header card */
-            .kn-header-2 {
-                flex-direction: column !important;
-                align-items: flex-start !important;
-                gap: 10px;
-            }
-
-            /* Statistik card */
-            .stat-card h2,
-            .stat-card h3 {
-                font-size: 1.4rem;
-            }
-        }
-
-        /* MOBILE */
-        @media (max-width: 576px) {
-
-            /* Statistik jadi full */
-            .stat-card {
-                padding: 16px;
-            }
-
-            /* Table scroll */
-            .table-responsive {
-                overflow-x: auto;
-            }
-
-            table {
-                min-width: 700px;
-            }
-
-            /* Avatar kecil */
-            .avatar {
-                width: 26px;
-                height: 26px;
-                font-size: 11px;
-            }
-
-            /* Button kecil */
-            .btn-sm {
-                padding: 4px 8px;
-                font-size: 12px;
-            }
-
-            /* Header text */
-            h4 {
-                font-size: 1.2rem;
-            }
-
-            h5 {
-                font-size: 1rem;
-            }
-        }
-
-        @media screen and (max-width : 992px) {
-            .kn-bill {
-                margin-top: 1.5rem !important;
-            }
-        }
-
-        @media screen and (max-width : 425px) {
-            .kn-header-2 {
-                flex-direction: column !important;
-                align-items: start !important;
+            .input-group,
+            .form-select {
+                margin-bottom: 5px;
             }
         }
     </style>
@@ -155,47 +131,42 @@
 
 <body>
 
-    <!-- 1. NAVBAR BARU (Menu & Logout) -->
-    <nav class="navbar navbar-expand-lg navbar-custom mb-4 py-3">
+    <!-- 1. NAVBAR -->
+    <nav class="navbar navbar-expand-lg navbar-custom mb-4 py-3 sticky-top">
         <div class="container">
-            <img src="{{ asset('images/logo-izz.png') }}" class="kn-logo-login-form" alt="Logo Izzati" width="150">
+            <img src="{{ asset('images/logo-izz.png') }}" class="kn-logo-login-form" alt="Logo Izzati" width="125">
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+                <span class="navbar-toggler-icon"></span>
+            </button>
 
-
-            <div class="d-flex gap-3 align-items-center kn-header-1">
-                <!-- Menu Navigasi -->
-                <a href="{{ route('boss.dashboard') }}" class="text-decoration-none fw-bold text-dark">Dasbor</a>
-                <a href="{{ route('users.index') }}" class="text-decoration-none text-secondary">Kelola User</a>
-                <a href="{{ route('job-types.index') }}" class="text-decoration-none text-secondary">Kelola Tipe Pekerjaan</a>
-                <a href="{{ route('boss.income.index') }}" class="text-decoration-none text-secondary">Pendapatan Tim</a>
-
-
-                <div class="vr mx-2"></div>
-
-                <!-- Tombol Logout -->
-                <form action="{{ route('logout') }}" method="POST">
-                    @csrf
-                    <button type="submit" class="btn btn-outline-danger btn-sm">
-                        <i class="bi bi-box-arrow-right"></i> Keluar
-                    </button>
-                </form>
+            <div class="collapse navbar-collapse mt-2 mt-lg-0" id="navbarContent">
+                <div class="d-flex flex-column flex-lg-row gap-3 ms-auto align-items-lg-center">
+                    <a href="{{ route('boss.dashboard') }}" class="text-decoration-none fw-bold text-dark">Dashboard</a>
+                    <a href="{{ route('users.index') }}" class="text-decoration-none text-secondary">Kelola User</a>
+                    <a href="{{ route('job-types.index') }}" class="text-decoration-none text-secondary">Job Types</a>
+                    <a href="{{ route('boss.income.index') }}" class="text-decoration-none text-secondary">Income Crews</a>
+                    <div class="vr d-none d-lg-block mx-2"></div>
+                    <form action="{{ route('logout') }}" method="POST">
+                        @csrf
+                        <button type="submit" class="btn btn-outline-danger btn-sm px-4 rounded-pill w-100 w-lg-auto">Logout</button>
+                    </form>
+                </div>
             </div>
         </div>
     </nav>
 
     <div class="container pb-5">
 
-        <!-- HEADER & FILTER -->
-        <div class="card border-0 shadow-sm mb-4 p-3 bg-white">
+        <!-- 2. FILTER BAR -->
+        <div class="card border-0 shadow-sm mb-4 p-3 bg-white rounded-3">
             <div class="d-flex flex-wrap justify-content-between align-items-end gap-3">
-                <div>
+                <div class="w-100 w-md-auto">
                     <h4 class="fw-bold text-dark mb-1">Dashboard Boss</h4>
                     <p class="text-muted mb-0 small">Halo, {{ Auth::user()->name }}! Semangat kerjanya.</p>
                 </div>
 
-                <form action="{{ route('boss.dashboard') }}" method="GET" class="d-flex flex-wrap align-items-center justify-content-end gap-2">
-
-                    <!-- Filter Tipe Job -->
-                    <select name="job_type" class="form-select form-select-sm" style="width: 120px;" onchange="this.form.submit()">
+                <form action="{{ route('boss.dashboard') }}" method="GET" class="d-flex flex-wrap align-items-center justify-content-lg-end gap-2 w-100 w-lg-auto">
+                    <select name="job_type" class="form-select form-select-sm" style="min-width: 120px;" onchange="storeTabAndSubmit(this.form)">
                         <option value="">Semua Tipe</option>
                         @foreach($allJobTypes as $type)
                         <option value="{{ $type->id }}" {{ request('job_type') == $type->id ? 'selected' : '' }}>
@@ -204,376 +175,504 @@
                         @endforeach
                     </select>
 
-                    <div class="vr mx-1"></div>
-
-                    <!-- FILTER RENTANG TANGGAL -->
-                    <div class="input-group input-group-sm" style="width: auto;">
-                        <span class="input-group-text bg-white text-muted border-end-0">Dari</span>
-                        <input type="date" name="start_date" value="{{ request('start_date') }}" class="form-control border-start-0"
-                            onchange="if(this.form.end_date.value){ this.form.month.value=''; this.form.submit() }">
-
-                        <span class="input-group-text bg-white text-muted border-start-0 border-end-0">s/d</span>
-
-                        <input type="date" name="end_date" value="{{ request('end_date') }}" class="form-control border-start-0"
-                            onchange="if(this.form.start_date.value){ this.form.month.value=''; this.form.submit() }">
+                    <div class="input-group input-group-sm" style="width: auto; min-width: 200px;">
+                        <span class="input-group-text bg-white">Dari</span>
+                        <input type="date" name="start_date" value="{{ request('start_date') }}" class="form-control" onchange="document.getElementsByName('month')[0].value=''; storeTabAndSubmit(this.form)">
+                        <span class="input-group-text bg-white">s/d</span>
+                        <input type="date" name="end_date" value="{{ request('end_date') }}" class="form-control" onchange="document.getElementsByName('month')[0].value=''; storeTabAndSubmit(this.form)">
                     </div>
 
-                    <div class="vr mx-1"></div>
-
-                    <!-- Filter Bulan (Opsional jika malas isi tanggal) -->
-                    <select name="month" class="form-select form-select-sm" style="width: 110px;" onchange="this.form.start_date.value=''; this.form.end_date.value=''; this.form.submit()">
+                    <select name="month" class="form-select form-select-sm" style="width: 110px;" onchange="document.getElementsByName('start_date')[0].value=''; document.getElementsByName('end_date')[0].value=''; storeTabAndSubmit(this.form)">
                         <option value="">- Bulan -</option>
                         @for($m=1; $m<=12; $m++)
-                            <option value="{{ $m }}" {{ request('month') == $m ? 'selected' : '' }}>
-                            {{ \Carbon\Carbon::create()->month($m)->translatedFormat('F') }}
-                            </option>
+                            <option value="{{ $m }}" {{ request('month') == $m ? 'selected' : '' }}>{{ \Carbon\Carbon::create()->month($m)->translatedFormat('F') }}</option>
                             @endfor
                     </select>
 
-                    <!-- Filter Tahun -->
-                    <select name="year" class="form-select form-select-sm" style="width: 80px;" onchange="this.form.submit()">
-                        <!-- Loop dari Tahun Depan sampai 2025 -->
-                        @for($y = date('Y') + 1; $y >= 2025; $y--)
-                        <option value="{{ $y }}" {{ (request('year') ?? date('Y')) == $y ? 'selected' : '' }}>
-                            {{ $y }}
-                        </option>
+                    <select name="year" class="form-select form-select-sm" style="width: 80px;" onchange="storeTabAndSubmit(this.form)">
+                        @for($y=date('Y')+1; $y>=2025; $y--)
+                        <option value="{{ $y }}" {{ (request('year') ?? date('Y')) == $y ? 'selected' : '' }}>{{ $y }}</option>
                         @endfor
                     </select>
 
-
-                    <!-- Tombol Reset -->
-                    <a href="{{ route('boss.dashboard') }}" class="btn btn-sm btn-light border" title="Reset Filter">
-                        <i class="bi bi-arrow-counterclockwise"></i>
-                    </a>
+                    <a href="{{ route('boss.dashboard') }}" class="btn btn-sm btn-light border" title="Reset" onclick="localStorage.removeItem('activeJobTab')"><i class="bi bi-arrow-counterclockwise"></i></a>
                 </form>
             </div>
         </div>
 
-
-        <!-- WIDGETS STATISTIK -->
-        <div class="row g-4 mb-4">
-
-            <!-- KARTU 1: PENDAPATAN (DINAMIS) -->
-            <div class="col-md-3">
+        <!-- 3. STATISTIK -->
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-md-3">
                 <div class="stat-card bg-green">
-                    <h6 class="text-uppercase" style="font-size: 0.7rem; font-weight: bold; opacity: 0.9;">
-                        PENDAPATAN ({{ $judulPeriode }})
-                    </h6>
-                    <h3 class="fw-bold">Rp {{ number_format($stats['monthly_income'], 0, ',', '.') }}</h3>
+                    <h6 class="text-uppercase small fw-bold opacity-75" style="font-size: 0.65rem;">PENDAPATAN ({{ $judulPeriode }})</h6>
+                    <h3 class="fw-bold mb-0">Rp {{ number_format($stats['monthly_income'], 0, ',', '.') }}</h3>
                 </div>
             </div>
-
-            <!-- KARTU 2: JOB COUNT (DINAMIS) -->
-            <div class="col-md-3">
+            <div class="col-6 col-md-3">
                 <div class="stat-card bg-indigo">
-                    <h6 class="text-uppercase" style="font-size: 0.7rem; font-weight: bold; opacity: 0.9;">
-                        JOB SELESAI/JADWAL ({{ $judulPeriode }})
-                    </h6>
-                    <h2 class="fw-bold">{{ $stats['jobs_count'] }}</h2>
+                    <h6 class="text-uppercase small fw-bold opacity-75" style="font-size: 0.65rem;">JOB SELESAI/JADWAL</h6>
+                    <h2 class="fw-bold mb-0">{{ $stats['jobs_count'] }}</h2>
                 </div>
             </div>
-
-            <!-- KARTU 3 & 4 TETAP SAMA (GLOBAL) -->
-            <div class="col-md-3">
+            <div class="col-6 col-md-3">
                 <div class="stat-card bg-orange">
-                    <h6 class="text-uppercase" style="font-size: 0.7rem; font-weight: bold;">
-                        SEDANG BERJALAN (SAAT INI)
-                    </h6>
-                    <h2 class="fw-bold">{{ $stats['ongoing_jobs'] }}</h2>
+                    <h6 class="text-uppercase small fw-bold opacity-75" style="font-size: 0.65rem;">SEDANG BERJALAN</h6>
+                    <h2 class="fw-bold mb-0">{{ $stats['ongoing_jobs'] }}</h2>
                 </div>
             </div>
 
-            <div class="col-md-3">
-                <div class="stat-card bg-red">
-                    <h6 class="text-uppercase" style="font-size: 0.7rem; font-weight: bold;">
-                        BELUM LUNAS (GLOBAL)
-                    </h6>
-                    <h2 class="fw-bold">{{ $stats['unpaid_jobs'] }}</h2>
+            <!-- KARTU TAGIHAN (KLIK UNTUK BUKA SIDEBAR) -->
+            <div class="col-6 col-md-3">
+                <div class="stat-card bg-red clickable" data-bs-toggle="offcanvas" data-bs-target="#offcanvasTagihan">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h6 class="text-uppercase small fw-bold opacity-75" style="font-size: 0.65rem;">PERLU DITAGIH</h6>
+                        <i class="bi bi-chevron-right opacity-50"></i>
+                    </div>
+                    <h2 class="fw-bold mb-0">{{ $stats['unpaid_jobs'] }}</h2>
+                    <small class="opacity-75" style="font-size: 0.7rem;">Klik untuk proses</small>
                 </div>
             </div>
         </div>
-        <!-- KONTEN TABEL (Sama seperti sebelumnya, tombol Create Job & Eye sudah diperbaiki) -->
+
+        <!-- 4. TABEL JADWAL (FULL WIDTH) -->
         <div class="row">
-            <div class="col-lg-8">
-                <div class="card table-card p-3">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="fw-bold">
-                            Data Job: {{ $judulPeriode }}
-                            @if(request('job_type'))
-                            <span class="badge bg-primary fs-6 ms-1">
-                                {{ $allJobTypes->find(request('job_type'))->job_type_name }}
-                            </span>
-                            @endif
-                        </h5>
-                        <a href="{{ route('jobs.create') }}" class="btn btn-primary btn-sm">+ Buat Job Baru</a>
+            <div class="col-12">
+                <div class="card card-table overflow-hidden">
+                    <div class="card-header bg-white p-0 border-bottom">
+                        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center pe-3">
+                            <!-- Nav Tabs -->
+                            <ul class="nav nav-tabs w-100 w-md-auto border-0" id="jobTabs" role="tablist">
+                                <li class="nav-item">
+                                    <button class="nav-link active" id="active-tab" data-bs-toggle="tab" data-bs-target="#tab-active">
+                                        🚀 Jadwal Aktif
+                                        <span class="badge bg-primary ms-1">
+                                            {{ $activeJobs->count() }}
+                                        </span>
+                                    </button>
+                                </li>
+
+                                <li class="nav-item">
+                                    <button class="nav-link" id="waiting-editor-tab" data-bs-toggle="tab" data-bs-target="#tab-waiting-editor">
+                                        ⏳ Status Editor
+                                        <span class="badge bg-warning text-dark ms-1">
+                                            {{ $waitingEditorJobs->count() }}
+                                        </span>
+                                    </button>
+                                </li>
+
+                                <li class="nav-item">
+                                    <button class="nav-link" id="completed-tab" data-bs-toggle="tab" data-bs-target="#tab-completed">
+                                        ✅ Selesai
+                                        <span class="badge bg-secondary ms-1">
+                                            {{ $completedJobs->count() }}
+                                        </span>
+                                    </button>
+                                </li>
+
+                                <li class="nav-item">
+                                    <button class="nav-link" id="canceled-tab" data-bs-toggle="tab" data-bs-target="#tab-canceled">
+                                        ❌ Dibatalkan
+                                        <span class="badge bg-danger ms-1">
+                                            {{ $canceledJobs->count() }}
+                                        </span>
+                                    </button>
+                                </li>
+                            </ul>
+
+                            <!-- Tombol Buat Job -->
+                            <div class="p-2 text-end">
+                                <a href="{{ route('jobs.create') }}" class="btn btn-primary btn-sm rounded-pill px-3 fw-bold text-nowrap shadow-sm">
+                                    <i class="bi bi-plus-lg me-1"></i> Buat Job
+                                </a>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle">
-                            <thead class="table-light">
-                                <tr>
-                                    <!-- KOLOM BARU -->
-                                    <th>Tanggal</th>
-                                    <th>Jam</th>
-                                    <th>Nama Job</th>
-                                    <th>Tipe</th>
-                                    <th>Crew</th>
-                                    <th>Status</th>
-                                    <th>Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse($todaysJobs as $job)
-                                <tr>
-                                    <!-- ISI KOLOM TANGGAL -->
-                                    <td class="text-nowrap">
-                                        {{ $job->job_date->translatedFormat('d M Y') }}
-                                        <div class="small text-muted">{{ $job->job_date->translatedFormat('l') }}</div>
-                                    </td>
+                    <div class="card-body p-0">
+                        <div class="tab-content" id="jobTabsContent">
 
-                                    <td><strong>{{ \Carbon\Carbon::parse($job->start_time)->format('H:i') }}</strong></td>
-                                    <td>
-                                        {{ $job->job_title }}<br>
-                                    </td>
-                                    <td>
-                                        <span class="badge text-white" style="background-color: {{ $job->type->badge_color ?? '#6c757d' }}">
-                                            {{ $job->type->job_type_name }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        @foreach($job->users as $crew)
-                                        <div class="avatar" title="{{ $crew->name }}">{{ substr($crew->name, 0, 1) }}</div>
-                                        @endforeach
-                                        @if($job->users->isEmpty()) <span class="text-danger small">Belum assign</span> @endif
-                                    </td>
-                                    <td>
-                                        @if($job->status == 'scheduled')
-                                        <span class="badge bg-secondary">Terjadwal</span>
+                            <!-- TAB 1: AKTIF -->
+                            <div class="tab-pane fade show active" id="tab-active" role="tabpanel">
+                                <div class="table-responsive">
+                                    <table class="table table-hover mb-0 align-middle">
+                                        <thead>
+                                            <tr>
+                                                <th class="ps-4">Tanggal</th>
+                                                <th>Jam</th>
+                                                <th>Job & Klien</th>
+                                                <th>Tipe</th>
+                                                <th>Crew / Editor</th>
+                                                <th>Status</th>
+                                                <th class="text-end pe-4">Aksi</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @php $lastDate = null; @endphp
 
-                                        @elseif($job->status == 'ongoing')
-                                        <span class="badge bg-warning text-dark">Proses Lapangan</span>
+                                            @forelse($activeJobs as $job)
 
-                                        @elseif($job->status == 'canceled')
-                                        <span class="badge bg-dark">Dibatalkan</span>
+                                            @if($lastDate !== $job->job_date->toDateString())
+                                            <tr class="table-secondary">
+                                                <td colspan="7" class="fw-bold text-dark ps-4 py-2">
+                                                    @if($job->job_date->isToday())
+                                                    🔴 Hari Ini — {{ $job->job_date->translatedFormat('d M Y') }}
+                                                    @else
+                                                    📅 {{ $job->job_date->translatedFormat('l, d M Y') }}
+                                                    @endif
+                                                </td>
+                                            </tr>
 
-                                        @elseif($job->status == 'done')
-                                        {{-- Cek Status Editor --}}
-                                        @if($job->status === 'done')
-
-                                        @switch($job->editor_status)
-
-                                        @case('idle')
-                                        <span class="badge bg-info text-dark">
-                                            <i class="bi bi-hourglass-split"></i> Menunggu Editor
-                                        </span>
-                                        @break
-
-                                        @case('editing')
-                                        <span class="badge bg-warning text-dark">
-                                            <i class="bi bi-laptop"></i> Proses Edit
-                                        </span>
-                                        @break
-
-                                        @case('completed')
-                                        <span class="badge bg-success">
-                                            <i class="bi bi-check-circle-fill"></i> Selesai
-                                        </span>
-                                        @break
-
-                                        @default
-                                        <span class="badge bg-secondary">Selesai</span>
-
-                                        @endswitch
-
-                                        @endif
-
-                                        @endif
-                                    </td>
-                                    <td>
-                                        <!-- LOGIC TOMBOL WA REMINDER -->
-                                        @if($job->users->isNotEmpty())
-                                        @php
-                                        $crewName = $job->users->first()->name;
-                                        $crewPhone = $job->users->first()->phone_number;
-
-                                        // Format Nomor HP (08xx -> 628xx)
-                                        if(substr($crewPhone, 0, 1) == '0') {
-                                        $crewPhone = '62' . substr($crewPhone, 1);
-                                        }
-
-                                        // Pesan WA
-                                        $text = "Halo {$crewName}, ada job baru dari Boss untuk tanggal " . $job->job_date->format('d-m-Y') . ". Jangan lupa cek dashboard kamu ya!";
-                                        $waLink = "https://wa.me/{$crewPhone}?text=" . urlencode($text);
-                                        @endphp
-
-                                        <a href="{{ $waLink }}" target="_blank" class="btn btn-success btn-sm" title="Kirim WA">
-                                            <i class="bi bi-whatsapp"></i>
-                                        </a>
-                                        @endif
-
-                                        <!-- Tombol Detail -->
-                                        <a href="{{ route('jobs.show', $job->id) }}" class="btn btn-outline-secondary btn-sm">
-                                            <i class="bi bi-eye"></i>
-                                        </a>
-                                    </td>
-                                </tr>
-                                @empty
-                                <tr>
-                                    <td colspan="7" class="text-center py-4 text-muted">Tidak ada jadwal.</td>
-                                </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-lg-4 kn-bill">
-                <div class="card table-card p-3">
-
-                    <!-- NAV TABS -->
-                    <ul class="nav nav-pills mb-3 nav-justified" id="pills-tab" role="tablist">
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link active fw-bold small" id="pills-tagih-tab" data-bs-toggle="pill" data-bs-target="#pills-tagih" type="button" role="tab">
-                                ⚠️ PERLU DITAGIH <span class="badge bg-white text-danger ms-1">{{ $billingList->count() }}</span>
-                            </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link fw-bold small" id="pills-konfirmasi-tab" data-bs-toggle="pill" data-bs-target="#pills-konfirmasi" type="button" role="tab">
-                                ✅ KONFIRMASI <span class="badge bg-white text-primary ms-1">{{ $confirmationList->count() }}</span>
-                            </button>
-                        </li>
-                    </ul>
-
-                    <div class="tab-content" id="pills-tabContent">
-
-                        <!-- TAB 1: PERLU DITAGIH (Crew pilih Unpaid) -->
-                        <div class="tab-pane fade show active" id="pills-tagih" role="tabpanel">
-                            <ul class="list-group list-group-flush">
-                                @forelse($billingList as $job)
-                                <li class="list-group-item px-0">
-                                    <div class="d-flex justify-content-between align-items-start mb-2">
-                                        <div>
-                                            <div class="fw-bold text-dark">{{ $job->client_name }} - {{ $job->job_title }}</div>
-                                            <small class="text-muted">{{ $job->job_date->format('d M Y') }}</small>
-                                        </div>
-                                        <div class="text-end">
-                                            @if($job->amount > 0)
-                                            <span class="d-block fw-bold text-dark">Rp {{ number_format($job->amount, 0, ',', '.') }}</span>
-                                            @else
-                                            <span class="badge bg-warning text-dark">Harga 0</span>
+                                            @php $lastDate = $job->job_date->toDateString(); @endphp
                                             @endif
-                                            <span class="badge bg-danger">Unpaid</span>
-                                        </div>
-                                    </div>
 
-                                    <!-- FORM PELUNASAN (FULL) -->
-                                    <form action="{{ route('jobs.confirmPayment', $job->id) }}" method="POST" enctype="multipart/form-data" class="bg-light p-2 rounded">
-                                        @csrf
+                                            @include('boss.partials.job_row_boss', ['job' => $job])
+                                            @empty
+                                            <tr>
+                                                <td colspan="7" class="text-center py-5 text-muted">
+                                                    Tidak ada jadwal aktif.
+                                                </td>
+                                            </tr>
+                                            @endforelse
+                                        </tbody>
 
-                                        <!-- 1. Pilih Metode -->
-                                        <div class="mb-2">
-                                            <select name="payment_method" class="form-select form-select-sm" required>
-                                                <option value="" disabled selected>Pilih Metode Bayar...</option>
-                                                <option value="tf">Transfer</option>
-                                                <option value="vendor">Vendor</option>
-                                                <option value="cash">Cash</option>
-                                            </select>
-                                        </div>
+                                    </table>
+                                </div>
+                            </div>
 
-                                        <!-- 2. Input Harga (Muncul jika harga masih 0) -->
-                                        @if($job->amount == 0)
-                                        <div class="mb-2">
-                                            <input type="number" name="amount" class="form-control form-control-sm" placeholder="Masukkan Nominal Job (Rp)" required>
-                                        </div>
-                                        @endif
+                            <!-- TAB 2: STATUS EDITOR -->
 
-                                        <!-- 3. Upload Bukti (Opsional) -->
-                                        <div class="mb-2">
-                                            <label class="small text-muted">Upload Bukti (Opsional)</label>
-                                            <input type="file" name="proof" class="form-control form-control-sm">
-                                        </div>
+                            <div class="tab-pane fade" id="tab-waiting-editor">
+                                <div class="table-responsive">
+                                    <table class="table table-hover mb-0 align-middle">
+                                        <thead>
+                                            <tr>
+                                                <th class="ps-4">Tanggal</th>
+                                                <th>Jam</th>
+                                                <th>Job & Klien</th>
+                                                <th>Tipe</th>
+                                                <th>Crew / Editor</th>
+                                                <th>Status</th>
+                                                <th class="text-end pe-4">Aksi</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @php $lastDate = null; @endphp
 
-                                        <button class="btn btn-success btn-sm w-100 fw-bold">Simpan & Lunas</button>
-                                    </form>
-                                </li>
-                                @empty
-                                <li class="list-group-item text-center text-muted py-4">Semua tagihan aman.</li>
-                                @endforelse
-                            </ul>
+                                            @forelse($waitingEditorJobs as $job)
+
+                                            @if($lastDate !== $job->job_date->toDateString())
+                                            <tr class="table-secondary">
+                                                <td colspan="7" class="fw-bold text-dark ps-4 py-2">
+                                                    @if($job->job_date->isToday())
+                                                    🔴 Hari Ini — {{ $job->job_date->translatedFormat('d M Y') }}
+                                                    @else
+                                                    📅 {{ $job->job_date->translatedFormat('l, d M Y') }}
+                                                    @endif
+                                                </td>
+                                            </tr>
+                                            @php $lastDate = $job->job_date->toDateString(); @endphp
+                                            @endif
+
+                                            @include('boss.partials.job_row_boss', ['job' => $job])
+
+                                            @empty
+                                            <tr>
+                                                <td colspan="7" class="text-center py-5 text-muted">
+                                                    Tidak ada job menunggu editor.
+                                                </td>
+                                            </tr>
+                                            @endforelse
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+
+                            <!-- TAB 3: SELESAI -->
+                            <div class="tab-pane fade" id="tab-completed" role="tabpanel">
+                                <div class="table-responsive">
+                                    <table class="table table-hover mb-0 align-middle">
+                                        <thead>
+                                            <tr>
+                                                <th class="ps-4">Tanggal</th>
+                                                <th>Jam</th>
+                                                <th>Job & Klien</th>
+                                                <th>Tipe</th>
+                                                <th>Crew / Editor</th>
+                                                <th>Status</th>
+                                                <th class="text-end pe-4">Aksi</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @php $lastDate = null; @endphp
+
+                                            @forelse($completedJobs as $job)
+
+
+                                            @if($lastDate !== $job->job_date->toDateString())
+                                            <tr class="table-secondary">
+                                                <td colspan="7" class="fw-bold text-dark ps-4 py-2">
+                                                    @if($job->job_date->isToday())
+                                                    🔴 Hari Ini — {{ $job->job_date->translatedFormat('d M Y') }}
+                                                    @else
+                                                    📅 {{ $job->job_date->translatedFormat('l, d M Y') }}
+                                                    @endif
+                                                </td>
+                                            </tr>
+
+                                            @php $lastDate = $job->job_date->toDateString(); @endphp
+                                            @endif
+
+                                            @include('boss.partials.job_row_boss
+                                            ', ['job' => $job])
+                                            @empty
+                                            <tr>
+                                                <td colspan="7" class="text-center py-5 text-muted">
+                                                    Belum ada riwayat selesai.
+                                                </td>
+                                            </tr>
+                                            @endforelse
+                                        </tbody>
+
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- TAB 4: DIBATALKAN -->
+
+                            <div class="tab-pane fade" id="tab-canceled">
+                                <div class="table-responsive">
+                                    <table class="table table-hover mb-0 align-middle">
+                                        <thead>
+                                            <tr>
+                                                <th class="ps-4">Tanggal</th>
+                                                <th>Jam</th>
+                                                <th>Job & Klien</th>
+                                                <th>Tipe</th>
+                                                <th>Crew / Editor</th>
+                                                <th>Status</th>
+                                                <th class="text-end pe-4">Aksi</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @php $lastDate = null; @endphp
+
+                                            @forelse($canceledJobs as $job)
+
+                                            @if($lastDate !== $job->job_date->toDateString())
+                                            <tr class="table-danger">
+                                                <td colspan="7" class="fw-bold text-dark ps-4 py-2">
+                                                    @if($job->job_date->isToday())
+                                                    🔴 Hari Ini — {{ $job->job_date->translatedFormat('d M Y') }}
+                                                    @else
+                                                    📅 {{ $job->job_date->translatedFormat('l, d M Y') }}
+                                                    @endif
+                                                </td>
+                                            </tr>
+                                            @php $lastDate = $job->job_date->toDateString(); @endphp
+                                            @endif
+
+                                            @include('boss.partials.job_row_boss', ['job' => $job])
+
+                                            @empty
+                                            <tr>
+                                                <td colspan="7" class="text-center py-5 text-muted">
+                                                    Tidak ada job dibatalkan.
+                                                </td>
+                                            </tr>
+                                            @endforelse
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
                         </div>
-
-                        <!-- TAB 2: PERLU KONFIRMASI (Crew pilih TF/Cash) -->
-                        <div class="tab-pane fade" id="pills-konfirmasi" role="tabpanel">
-                            <ul class="list-group list-group-flush">
-                                @forelse($confirmationList as $job)
-                                <li class="list-group-item px-0">
-                                    <div class="d-flex justify-content-between align-items-start mb-2">
-                                        <div>
-                                            <div class="fw-bold text-dark">{{ $job->client_name }} - {{ $job->job_title }}</div>
-                                            <small class="text-muted">Laporan Crew:
-                                                <span class="badge bg-info text-dark">{{ strtoupper($job->payment_method) }}</span>
-                                            </small>
-                                        </div>
-                                        <div class="text-end">
-                                            @if($job->amount > 0)
-                                            <span class="d-block fw-bold text-dark">Rp {{ number_format($job->amount, 0, ',', '.') }}</span>
-                                            @else
-                                            <span class="badge bg-warning text-dark">Harga 0</span>
-                                            @endif
-
-                                            <!-- Tombol Lihat Bukti Crew -->
-                                            @if($job->proof && $job->proof != 'no-proof.img')
-                                            <a href="{{ asset('storage/'.$job->proof) }}" target="_blank" class="small text-primary text-decoration-none">
-                                                <i class="bi bi-paperclip"></i> Bukti Crew
-                                            </a>
-                                            @endif
-                                        </div>
-                                    </div>
-
-                                    <!-- FORM KONFIRMASI (SIMPLE) -->
-                                    <form action="{{ route('jobs.confirmPayment', $job->id) }}" method="POST" enctype="multipart/form-data" class="bg-light p-2 rounded">
-                                        @csrf
-                                        <!-- Hidden payment method (tetap pakai pilihan crew/boss) -->
-                                        <!-- Boss bisa ubah metode jika mau -->
-                                        <div class="mb-2">
-                                            <label class="small text-muted">Metode Pembayaran</label>
-                                            <select name="payment_method" class="form-select form-select-sm">
-                                                <option value="tf" {{ $job->payment_method == 'tf' ? 'selected' : '' }}>Transfer</option>
-                                                <option value="cash" {{ $job->payment_method == 'cash' ? 'selected' : '' }}>Cash</option>
-                                                <option value="vendor" {{ $job->payment_method == 'vendor' ? 'selected' : '' }}>Vendor</option>
-                                            </select>
-                                        </div>
-
-                                        <!-- Input Harga (Wajib jika 0) -->
-                                        @if($job->amount == 0)
-                                        <div class="mb-2">
-                                            <input type="number" name="amount" class="form-control form-control-sm" placeholder="Nominal Real (Rp)" required>
-                                        </div>
-                                        @endif
-
-                                        <!-- Upload Bukti Boss (Opsional, menimpa bukti crew jika diisi) -->
-                                        <div class="mb-2">
-                                            <label class="small text-muted">Bukti Validasi (Opsional)</label>
-                                            <input type="file" name="proof" class="form-control form-control-sm">
-                                        </div>
-
-                                        <button class="btn btn-primary btn-sm w-100 fw-bold">Validasi & Terima Uang</button>
-                                    </form>
-                                </li>
-                                @empty
-                                <li class="list-group-item text-center text-muted py-4">Tidak ada yang perlu dikonfirmasi.</li>
-                                @endforelse
-                            </ul>
-                        </div>
-
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- OFFCANVAS (SIDEBAR TAGIHAN) -->
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasTagihan" aria-labelledby="offcanvasTagihanLabel" style="width: 400px;">
+        <div class="offcanvas-header bg-light border-bottom">
+            <h5 class="offcanvas-title fw-bold text-dark" id="offcanvasTagihanLabel">Keuangan & Konfirmasi</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body p-3">
+
+            <ul class="nav nav-pills mb-3 nav-justified" id="pills-tab-sidebar" role="tablist">
+                <li class="nav-item">
+                    <button class="nav-link active fw-bold small" id="pills-tagih-tab" data-bs-toggle="pill" data-bs-target="#pills-tagih" type="button">
+                        ⚠️ TAGIHAN <span class="badge bg-white text-danger ms-1">{{ $billingList->count() }}</span>
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link fw-bold small" id="pills-konfirmasi-tab" data-bs-toggle="pill" data-bs-target="#pills-konfirmasi" type="button">
+                        ✅ KONFIRMASI <span class="badge bg-white text-primary ms-1">{{ $confirmationList->count() }}</span>
+                    </button>
+                </li>
+            </ul>
+
+            <div class="tab-content">
+                <!-- Tab Tagihan -->
+                <div class="tab-pane fade show active" id="pills-tagih">
+                    <ul class="list-group list-group-flush">
+
+                        @php
+                        $groupedBilling = $billingList
+                        ->sortBy([
+                        ['job_date', 'desc'],
+                        ['start_time', 'asc'],
+                        ])
+                        ->groupBy(fn($job) => $job->job_date->toDateString());
+                        @endphp
+
+                        @forelse($groupedBilling as $date => $jobs)
+                        {{-- HEADER TANGGAL --}}
+                        <li class="list-group-item bg-danger fw-bold small text-white">
+                            📅 {{ \Carbon\Carbon::parse($date)->translatedFormat('l, d F Y') }}
+                        </li>
+
+                        @foreach($jobs as $job)
+                        <li class="list-group-item px-0 pb-3 mb-2">
+                            <div class="d-flex justify-content-between mb-2">
+                                <div>
+                                    <div class="fw-bold text-dark">
+                                        {{ $job->client_name }} — {{ $job->job_title }}
+                                    </div>
+                                    <small class="text-muted">
+                                        ⏰ {{ \Carbon\Carbon::parse($job->start_time)->format('H:i') }}
+                                    </small>
+                                </div>
+                                <div class="text-end">
+                                    <div class="fw-bold {{ $job->amount > 0 ? 'text-dark' : 'text-warning' }}">
+                                        {{ $job->amount > 0 ? 'Rp '.number_format($job->amount,0,',','.') : 'Harga 0' }}
+                                    </div>
+                                    <span class="badge bg-danger">Unpaid</span>
+                                </div>
+                            </div>
+
+                            <form action="{{ route('jobs.confirmPayment', $job->id) }}" method="POST" class="bg-light p-3 rounded border">
+                                @csrf
+                                <div class="mb-2">
+                                    <label class="small text-muted">Metode Bayar</label>
+                                    <select name="payment_method" class="form-select form-select-sm" required>
+                                        <option value="">Pilih...</option>
+                                        <option value="tf">Transfer</option>
+                                        <option value="cash">Cash</option>
+                                        <option value="vendor">Vendor</option>
+                                    </select>
+                                </div>
+
+                                @if($job->amount == 0)
+                                <div class="mb-2">
+                                    <label class="small text-muted">Update Harga</label>
+                                    <input type="number" name="amount" class="form-control form-control-sm" required>
+                                </div>
+                                @endif
+
+                                <button class="btn btn-success btn-sm w-100 fw-bold">
+                                    Simpan & Lunas
+                                </button>
+                            </form>
+                        </li>
+                        @endforeach
+
+                        @empty
+                        <div class="text-center py-5 text-muted">
+                            Semua tagihan aman 👍
+                        </div>
+                        @endforelse
+                    </ul>
+                </div>
+
+
+
+                <!-- Tab Konfirmasi -->
+                <div class="tab-pane fade" id="pills-konfirmasi">
+                    <ul class="list-group list-group-flush">
+
+                        @php
+                        $groupedConfirmation = $confirmationList
+                        ->sortBy([
+                        ['job_date', 'desc'],
+                        ['start_time', 'asc'],
+                        ])
+                        ->groupBy(fn($job) => $job->job_date->toDateString());
+                        @endphp
+
+                        @forelse($groupedConfirmation as $date => $jobs)
+                        {{-- HEADER TANGGAL --}}
+                        <li class="list-group-item bg-danger fw-bold small text-white">
+                            📅 {{ \Carbon\Carbon::parse($date)->translatedFormat('l, d F Y') }}
+                        </li>
+
+                        @foreach($jobs as $job)
+                        <li class="list-group-item px-0 pb-3 mb-2">
+                            <div class="d-flex justify-content-between mb-2">
+                                <div>
+                                    <div class="fw-bold text-dark">{{ $job->client_name }} — {{ $job->job_title }}</div>
+                                    <small class="text-muted">
+                                        ⏰ {{ \Carbon\Carbon::parse($job->start_time)->format('H:i') }} |
+                                        <span class="badge bg-info text-dark">{{ strtoupper($job->payment_method) }}</span>
+                                    </small>
+                                </div>
+                                <div class="fw-bold">
+                                    Rp {{ number_format($job->amount,0,',','.') }}
+                                </div>
+                            </div>
+
+                            <form action="{{ route('jobs.confirmPayment', $job->id) }}" method="POST" class="bg-light p-3 rounded border">
+                                @csrf
+                                <input type="hidden" name="payment_method" value="{{ $job->payment_method }}">
+
+                                @if($job->amount == 0)
+                                <div class="mb-2">
+                                    <label class="small text-muted">Update Harga</label>
+                                    <input type="number" name="amount" class="form-control form-control-sm" required>
+                                </div>
+                                @endif
+
+                                <button class="btn btn-primary btn-sm w-100 fw-bold">
+                                    Verifikasi Terima
+                                </button>
+                            </form>
+                        </li>
+                        @endforeach
+
+                        @empty
+                        <div class="text-center py-5 text-muted">
+                            Tidak ada konfirmasi
+                        </div>
+                        @endforelse
+                    </ul>
+                </div>
+
+
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPT WAJIB -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- LOGIKA TAB PERSISTENCE -->
+    <script>
+        function storeTabAndSubmit(form) {
+            const activeTab = document.querySelector('#jobTabs .nav-link.active').id;
+            localStorage.setItem('activeJobTab', activeTab);
+            form.submit();
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            const savedTab = localStorage.getItem('activeJobTab');
+            if (savedTab) {
+                const tabTrigger = new bootstrap.Tab(document.querySelector('#' + savedTab));
+                tabTrigger.show();
+            }
+        });
+    </script>
 </body>
 
 </html>

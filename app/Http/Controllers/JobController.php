@@ -9,6 +9,8 @@ use App\Models\User;
 use App\Models\JobAssignment;
 use App\Models\Transaction;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
+
 
 class JobController extends Controller
 {
@@ -118,11 +120,11 @@ class JobController extends Controller
     }
 
     // 5. Proses Update Job
+     // 5. Proses Update Job (DENGAN DETEKSI PERUBAHAN CREW)
     public function update(Request $request, Job $job)
     {
-        // PROTEKSI KUAT SAAT UPDATE
-        if ($job->status != 'scheduled') {
-            return back()->with('error', 'Gagal update! Job sudah berjalan atau selesai.');
+        if ($job->status == 'ongoing') {
+            return back()->with('error', 'Gagal update! Job sedang berjalan.');
         }
 
         $request->validate([
@@ -132,6 +134,9 @@ class JobController extends Controller
             'crew_ids' => 'nullable|array'
         ]);
 
+        // 1. SIMPAN DATA CREW LAMA (Sebelum di-update)
+        $oldCrews = $job->users()->get(); 
+
         DB::transaction(function () use ($request, $job) {
             $job->update([
                 'job_title' => $request->job_title,
@@ -139,20 +144,44 @@ class JobController extends Controller
                 'client_phone' => $request->client_phone,
                 'job_type' => $request->job_type,
                 'job_date' => $request->job_date,
-                'start_time' => $request->start_time,
-                'end_time' => $request->end_time,
-                'location' => $request->location,
-                'amount' => $request->amount,
+                'start_time' => $request->start_time ?? $job->start_time,
+                'end_time' => $request->end_time ?? $job->end_time,
+                'location' => $request->location ?? $job->location,
+                'amount' => $request->amount ?? 0,
                 'notes' => $request->notes,
+                'result_link' => $request->result_link ?? $job->result_link,
             ]);
 
-            // Update Crew jika ada input
+            // 2. UPDATE CREW DI DATABASE
             if ($request->has('crew_ids')) {
                 $job->users()->sync($request->crew_ids);
             }
         });
 
-        return redirect()->route('jobs.show', $job->id)->with('success', 'Job berhasil diupdate!');
+        // 3. BANDINGKAN CREW LAMA VS BARU
+        $newCrews = $job->users()->get(); // Ambil data baru
+        
+        $removedCrews = $oldCrews->diff($newCrews); // Siapa yg keluar?
+        $addedCrews = $newCrews->diff($oldCrews);   // Siapa yg masuk?
+
+        // 4. MASUKKAN KE SESSION (Agar tombol di View bisa baca)
+        $changes = [];
+        if ($removedCrews->isNotEmpty() || $addedCrews->isNotEmpty()) {
+            $changes = [
+                'job_id' => $job->id,
+                'removed' => $removedCrews,
+                'added' => $addedCrews
+            ];
+        }
+
+        // 5. REDIRECT SESUAI ROLE
+        $route = auth()->user()->role->name == 'admin' ? 'admin.dashboard' : 'boss.dashboard';
+        $param = auth()->user()->role->name == 'admin' ? [] : ['job' => $job->id];
+
+        // Kirim 'crew_changes' ke session
+        return redirect()->route($route, $param)
+            ->with('success', 'Job berhasil diupdate!')
+            ->with('crew_changes', $changes);
     }
 
     // 6. Proses Hapus Job
@@ -262,11 +291,6 @@ class JobController extends Controller
                     'transaction_date' => now()
                 ]);
             }
-
-            // --- BAGIAN CREW DIHAPUS TOTAL ---
-            // Tidak ada transaksi yang dibuat untuk crew di sini.
-            // Gaji crew nanti diinput manual oleh Boss di menu Income.
-
         });
 
         return back()->with('success', 'Pembayaran diterima! Uang masuk kas Boss (Full).');
@@ -317,5 +341,64 @@ class JobController extends Controller
         }
 
         return back()->with('success', 'Bukti pembayaran berhasil diupload!');
+    }
+
+    // 12. Kirim WA (Logic Baru: Bisa Skip Update Waktu)
+    public function sendWhatsapp(Request $request, Job $job)
+    {
+        // Update waktu kirim (kecuali dilarang)
+        if (!$request->has('no_update')) {
+            $job->update(['wa_sent_at' => now()]);
+        }
+
+        // --- PERBAIKAN LOGIC NOMOR HP ---
+        
+        // 1. Cek apakah ada request khusus 'target_phone' (Untuk Crew Lama)?
+        if ($request->has('target_phone') && $request->input('target_phone')) {
+            $crewPhone = $request->input('target_phone');
+            $crewName  = $request->input('target_name') ?? 'Crew';
+        } 
+        // 2. Jika tidak ada, baru ambil Crew dari Database (Untuk Crew Saat Ini)
+        else {
+            $crew = $job->users->first();
+            $crewName  = $crew ? $crew->name : 'Crew';
+            $crewPhone = $crew ? $crew->phone_number : '';
+        }
+
+        // Format 08 -> 628
+        // Hapus karakter selain angka
+        $crewPhone = preg_replace('/[^0-9]/', '', $crewPhone);
+        if(substr($crewPhone, 0, 1) == '0') {
+            $crewPhone = '62' . substr($crewPhone, 1);
+        }
+
+        // --- ISI PESAN ---
+        $type = $request->query('type', 'new');
+        $tgl = $job->job_date->translatedFormat('d F Y');
+        $jam = \Carbon\Carbon::parse($job->start_time)->format('H:i');
+
+        if ($type == 'cancel_person') {
+            // KHUSUS CREW LAMA
+            $text = "⛔ *INFO PERGANTIAN CREW* ⛔\n\nHalo {$crewName}, mohon maaf untuk job:\nJudul: *{$job->job_title}*\nTanggal: {$tgl}\n\nTugasmu telah digantikan oleh crew lain. Untuk info lebih detail sisa job, Mohon cek dashboard kamu ya!";
+        } elseif ($type == 'revisi_update') {
+            $text = "⚠️ *INFO REVISI JADWAL* ⚠️\n\nHalo {$crewName}, ada perubahan data:\nJudul: {$job->job_title}\nTanggal: {$tgl}\nJam: {$jam}\nLokasi: {$job->location}.\n\nMohon cek dashboard kamu ya!";
+        } else {
+            $text = "✅ *JOB BARU* ✅\n\nHalo {$crewName}, kamu ditugaskan untuk:\nJudul: {$job->job_title}\nTanggal: {$tgl}\nJam: {$jam}\nLokasi: {$job->location}.\n\nMohon cek dashboard kamu ya!";
+        }
+        
+        $waLink = "https://wa.me/{$crewPhone}?text=" . urlencode($text);
+
+        return redirect()->away($waLink);
+    }
+
+    // 13. Method Baru: Tandai WA Selesai (Manual)
+     public function markWaSent(Job $job)
+    {
+        $job->update(['wa_sent_at' => now()]);
+        
+        // Hapus cache crew lama karena sudah dianggap selesai
+        Cache::forget('old_crew_' . $job->id);
+
+        return back()->with('success', 'Status WA diperbarui.');
     }
 }

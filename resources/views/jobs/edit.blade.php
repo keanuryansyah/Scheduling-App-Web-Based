@@ -9,6 +9,10 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Flatpickr (Timepicker 24 Jam) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/material_orange.css">
 
     <style>
         body { 
@@ -37,6 +41,8 @@
             background-color: #f8d7da;
             font-style: italic;
         }
+        /* Flatpickr Custom */
+        .flatpickr-input[readonly] { background-color: #fff !important; }
     </style>
 </head>
 <body>
@@ -94,21 +100,26 @@
                                     <label for="jobDate">Tanggal</label>
                                 </div>
                             </div>
+                            
+                            <!-- JAM MULAI (FLATPICKR) -->
                             <div class="col-md-4">
                                 <div class="form-floating">
-                                    <input type="time" name="start_time" id="startTime" class="form-control" value="{{ \Carbon\Carbon::parse($job->start_time)->format('H:i') }}" required>
-                                    <label for="startTime">Jam Mulai</label>
+                                    <input type="text" name="start_time" id="startTime" class="form-control" value="{{ \Carbon\Carbon::parse($job->start_time)->format('H:i') }}" required>
+                                    <label for="startTime">Jam Mulai (24 Jam)</label>
                                 </div>
                             </div>
+                            
+                            <!-- JAM SELESAI (FLATPICKR) -->
                             <div class="col-md-4">
                                 <div class="form-floating">
-                                    <input type="time" name="end_time" id="endTime" class="form-control" value="{{ \Carbon\Carbon::parse($job->end_time)->format('H:i') }}" required>
-                                    <label for="endTime">Jam Selesai</label>
+                                    <input type="text" name="end_time" id="endTime" class="form-control" value="{{ \Carbon\Carbon::parse($job->end_time)->format('H:i') }}" required>
+                                    <label for="endTime">Jam Selesai (24 Jam)</label>
                                 </div>
                             </div>
+
                             <div class="col-12">
                                 <div class="form-floating">
-                                    <textarea name="location" class="form-control" id="location" style="height: 80px">{{ $job->location }}</textarea>
+                                    <textarea name="location" class="form-control" id="location" style="height: 100px">{{ $job->location }}</textarea>
                                     <label for="location">Lokasi Lengkap / Link Maps</label>
                                 </div>
                             </div>
@@ -120,7 +131,7 @@
                             <!-- Catatan -->
                             <div class="col-12">
                                 <div class="form-floating">
-                                    <textarea name="notes" class="form-control" id="notes" style="height: 80px">{{ $job->notes }}</textarea>
+                                    <textarea name="notes" class="form-control" id="notes" style="height: 120px">{{ $job->notes }}</textarea>
                                     <label for="notes">Catatan Tambahan</label>
                                 </div>
                             </div>
@@ -128,7 +139,7 @@
                             <!-- Tipe Job & Harga -->
                             <div class="col-md-6">
                                 <div class="form-floating">
-                                    <select name="job_type" id="jobType" class="form-select" onchange="toggleCrewSection()">
+                                    <select name="job_type" id="jobType" class="form-select">
                                         @foreach($types as $type)
                                             <option value="{{ $type->id }}" 
                                                 data-name="{{ strtolower($type->job_type_name) }}"
@@ -158,7 +169,6 @@
                                             </span>
                                         </div>
                                         
-                                        <!-- Kita simpan ID Crew yang sedang bertugas sekarang di variable JS -->
                                         @php 
                                             $currentCrewId = $job->users->first()->id ?? ''; 
                                         @endphp
@@ -193,8 +203,28 @@
     </div>
 </div>
 
-<!-- SCRIPT LOGIKA UI & AJAX -->
+<!-- SCRIPTS -->
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
 <script>
+     const timeConfig = {
+            enableTime: true,
+            noCalendar: true,
+            dateFormat: "H:i",
+            time_24hr: true, // INI KUNCINYA AGAR 24 JAM (00-23)
+            disableMobile: "true", // Paksa tampilan desktop agar format tetap terjaga di HP
+            onClose: function(selectedDates, dateStr, instance) {
+                // Panggil cek bentrok setiap kali jam dipilih/ditutup
+                checkAvailability();
+            }
+        };
+
+        flatpickr("#startTime", timeConfig);
+        flatpickr("#endTime", timeConfig);
+</script>
+
+<!-- SCRIPT LOGIKA UI & AJAX -->
+<!-- <script>
     const jobDateInput = document.getElementById('jobDate');
     const startTimeInput = document.getElementById('startTime');
     const endTimeInput = document.getElementById('endTime');
@@ -279,7 +309,7 @@
         // Opsional: Cek availability saat load juga (tapi hati2 logic self-check)
         checkAvailability(); 
     });
-</script>
+</script> -->
 
 </body>
 </html>

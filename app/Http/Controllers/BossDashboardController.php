@@ -13,26 +13,37 @@ class BossDashboardController extends Controller
     {
         $bossId = auth()->id();
 
-        // 1. FILTER WAKTU
-        $startDate = $request->start_date;
-        $endDate = $request->end_date;
-        $filterMonth = $request->month;
-        $filterYear = $request->year ?? date('Y');
+        // 1. FILTER
+        $startDate     = $request->start_date;
+        $endDate       = $request->end_date;
+        $filterMonth   = $request->month;
+        $filterYear    = $request->year ?? date('Y');
         $filterJobType = $request->job_type;
 
-        // 2. QUERY JOB LIST (Tabel Utama)
+        // 2. QUERY JOB LIST (FIXED ORDER)
         $jobsQuery = Job::with(['type', 'users', 'creator'])
-                        ->orderByRaw("FIELD(status, 'scheduled', 'ongoing', 'done', 'canceled')")
-                        ->orderBy('job_date', 'asc')
-                        ->orderBy('start_time', 'asc');
+            ->orderBy('job_date', 'asc')
+            ->orderBy('start_time', 'asc')
+            ->orderByRaw("                    
+        CASE status
+            WHEN 'ongoing' THEN 1
+            WHEN 'arrived' THEN 2
+            WHEN 'otw' THEN 3
+            WHEN 'scheduled' THEN 4
+            WHEN 'done' THEN 5
+            WHEN 'canceled' THEN 6
+            ELSE 7
+        END
+    ");
 
         $statsJobQuery = Job::query();
 
-        // Terapkan Filter
+        // 3. APPLY FILTER
         if ($startDate && $endDate) {
             $jobsQuery->whereBetween('job_date', [$startDate, $endDate]);
             $statsJobQuery->whereBetween('job_date', [$startDate, $endDate]);
-            $judulPeriode = Carbon::parse($startDate)->translatedFormat('d M') . " - " . Carbon::parse($endDate)->translatedFormat('d M Y');
+            $judulPeriode = Carbon::parse($startDate)->translatedFormat('d M') . " - " .
+                Carbon::parse($endDate)->translatedFormat('d M Y');
         } elseif ($filterMonth) {
             $jobsQuery->whereMonth('job_date', $filterMonth)->whereYear('job_date', $filterYear);
             $statsJobQuery->whereMonth('job_date', $filterMonth)->whereYear('job_date', $filterYear);
@@ -42,12 +53,13 @@ class BossDashboardController extends Controller
             $statsJobQuery->whereYear('job_date', $filterYear);
             $judulPeriode = "Tahun $filterYear";
         }
+
         if ($filterJobType) {
             $jobsQuery->where('job_type', $filterJobType);
             $statsJobQuery->where('job_type', $filterJobType);
         }
 
-        // 3. QUERY INCOME
+        // 4. QUERY INCOME
         $incomeQuery = Transaction::where('user_id', $bossId)
             ->where('amount', '>', 0)
             ->whereHas('job', function ($q) use ($filterJobType, $startDate, $endDate, $filterMonth, $filterYear) {
@@ -61,42 +73,69 @@ class BossDashboardController extends Controller
                 }
             });
 
-        // 4. SIDEBAR LOGIC (NEW)
-        
-        // A. PERLU DITAGIH (Crew pilih 'unpaid')
-        // Job status DONE, metode UNPAID, dan Boss belum terima uang
+        // 5. SIDEBAR NOTIFICATION
         $billingList = Job::where('status', 'done')
-                        ->where('payment_method', 'unpaid')
-                        ->whereDoesntHave('transactions', function($q) use ($bossId) {
-                             $q->where('user_id', $bossId)->where('amount', '>', 0);
-                        })
-                        ->orderBy('job_date', 'desc')
-                        ->get();
+            ->where('payment_method', 'unpaid')
+            ->whereDoesntHave('transactions', function ($q) use ($bossId) {
+                $q->where('user_id', $bossId)->where('amount', '>', 0);
+            })
+            ->orderBy('job_date', 'desc')
+            ->get();
 
-        // B. PERLU KONFIRMASI (Crew pilih 'tf', 'cash', 'vendor')
-        // Job status DONE, metode BUKAN unpaid, tapi Boss belum terima uang (verifikasi)
         $confirmationList = Job::where('status', 'done')
-                        ->whereIn('payment_method', ['tf', 'cash', 'vendor'])
-                        ->whereDoesntHave('transactions', function($q) use ($bossId) {
-                             $q->where('user_id', $bossId)->where('amount', '>', 0);
-                        })
-                        ->orderBy('job_date', 'desc')
-                        ->get();
+            ->whereIn('payment_method', ['tf', 'cash', 'vendor'])
+            ->whereDoesntHave('transactions', function ($q) use ($bossId) {
+                $q->where('user_id', $bossId)->where('amount', '>', 0);
+            })
+            ->orderBy('job_date', 'desc')
+            ->get();
 
-        // 5. HASIL AKHIR
+        // 6. FINAL RESULT
         $todaysJobs = $jobsQuery->get();
-        
+
+        // KHUSUS JADWAL AKTIF → ASC
+        $activeJobs = $todaysJobs
+            ->whereIn('status', ['scheduled', 'otw', 'arrived', 'ongoing'])
+            ->sortBy([
+                ['job_date', 'asc'],
+                ['start_time', 'asc'],
+            ]);
+
+
+        $waitingEditorJobs = $todaysJobs
+            ->where('status', 'done')
+            ->whereIn('editor_status', ['idle', 'editing'])
+            ->sortByDesc('job_date');
+
+        $completedJobs = $todaysJobs
+            ->where('status', 'done')
+            ->where('editor_status', 'completed')
+            ->sortByDesc('job_date');
+
+        $canceledJobs = $todaysJobs
+            ->where('status', 'canceled')
+            ->sortByDesc('job_date');
+
         $stats = [
-            'jobs_count' => $statsJobQuery->count(),
-            'ongoing_jobs' => Job::where('status', 'ongoing')->count(),
-            // Total notif di dashboard
-            'unpaid_jobs' => $billingList->count() + $confirmationList->count(), 
-            'monthly_income' => $incomeQuery->sum('amount')
+            'jobs_count'     => $statsJobQuery->count(),
+            'ongoing_jobs'   => Job::where('status', 'ongoing')->count(),
+            'unpaid_jobs'    => $billingList->count() + $confirmationList->count(),
+            'monthly_income' => $incomeQuery->sum('amount'),
         ];
 
         $allJobTypes = \App\Models\JobType::all();
 
-        // Variable yang dikirim ke View: billingList & confirmationList
-        return view('boss.dashboard', compact('stats', 'todaysJobs', 'billingList', 'confirmationList', 'allJobTypes', 'judulPeriode'));
+        return view('boss.dashboard', compact(
+            'stats',
+            'todaysJobs',
+            'activeJobs',
+            'waitingEditorJobs',
+            'completedJobs',
+            'canceledJobs',
+            'billingList',
+            'confirmationList',
+            'allJobTypes',
+            'judulPeriode'
+        ));
     }
 }

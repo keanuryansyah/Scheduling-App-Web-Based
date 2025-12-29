@@ -5,34 +5,123 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Detail Income: {{ $user->name }}</title>
-    
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
 
     <style>
-        body { background-color: #f8f9fa; font-family: 'Plus Jakarta Sans', sans-serif; color: #344767; }
-        .card-modern { border: none; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); background: white; }
-        .profile-card { background: linear-gradient(135deg, #0f172a 0%, #334155 100%); color: white; }
-        .avatar-circle { width: 60px; height: 60px; background-color: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; font-size: 1.5rem; flex-shrink: 0;}
-        .table-custom th { background-color: #f1f5f9; text-transform: uppercase; font-size: 0.7rem; color: #64748b; font-weight: 700; padding: 16px; white-space: nowrap; }
-        .table-custom td { padding: 16px; vertical-align: middle; border-bottom: 1px solid #f1f5f9; font-size: 0.9rem; white-space: nowrap; }
-        .input-gaji { font-family: 'Consolas', monospace; font-weight: 700; color: #198754; border-color: #198754; text-align: right; min-width: 150px; }
-        .status-pill { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; padding: 4px 8px; border-radius: 6px; }
-        .pill-pending { background: #fff3cd; color: #856404; }
-        .pill-success { background: #d1e7dd; color: #0f5132; }
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: #344767;
+        }
+
+        .card-modern {
+            border: none;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+            background: white;
+        }
+
+        .profile-card {
+            background: linear-gradient(135deg, #0f172a 0%, #334155 100%);
+            color: white;
+        }
+
+        .avatar-circle {
+            width: 60px;
+            height: 60px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: white;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .table-custom th {
+            background-color: #f1f5f9;
+            text-transform: uppercase;
+            font-size: 0.7rem;
+            color: #64748b;
+            font-weight: 700;
+            padding: 16px;
+            white-space: nowrap;
+        }
+
+        .table-custom td {
+            padding: 16px;
+            vertical-align: middle;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+
+        .input-gaji {
+            font-family: 'Consolas', monospace;
+            font-weight: 700;
+            color: #198754;
+            border-color: #198754;
+            text-align: right;
+            min-width: 150px;
+        }
+
+        .status-pill {
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 4px 8px;
+            border-radius: 6px;
+        }
+
+        .pill-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .pill-success {
+            background: #d1e7dd;
+            color: #0f5132;
+        }
+
         @media (max-width: 768px) {
-            .profile-content { flex-direction: column; align-items: center; text-align: center; }
-            .profile-info { margin-top: 15px; margin-left: 0 !important; }
-            .profile-money { margin-top: 20px; width: 100%; text-align: center !important; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px; }
-            .header-flex { flex-direction: column; align-items: flex-start; gap: 10px; }
+            .profile-content {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+
+            .profile-info {
+                margin-top: 15px;
+                margin-left: 0 !important;
+            }
+
+            .profile-money {
+                margin-top: 20px;
+                width: 100%;
+                text-align: center !important;
+                border-top: 1px solid rgba(255, 255, 255, 0.1);
+                padding-top: 15px;
+            }
+
+            .header-flex {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
         }
     </style>
 </head>
 
 <body>
     <div class="container py-5">
-        
+
         <!-- HEADER -->
         <div class="d-flex justify-content-between align-items-center mb-4 header-flex">
             <div class="d-flex align-items-center gap-3">
@@ -70,7 +159,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Kartu Kanan: Total Sesuai Filter -->
             <div class="col-md-4">
                 <div class="card card-modern p-4 h-100 border-start border-4 border-success">
@@ -90,9 +179,9 @@
                 <select name="job_type" class="form-select form-select-sm" style="width: 140px;" onchange="this.form.submit()">
                     <option value="">Semua Tipe</option>
                     @foreach($allJobTypes as $type)
-                        <option value="{{ $type->id }}" {{ request('job_type') == $type->id ? 'selected' : '' }}>
-                            {{ $type->job_type_name }}
-                        </option>
+                    <option value="{{ $type->id }}" {{ request('job_type') == $type->id ? 'selected' : '' }}>
+                        {{ $type->job_type_name }}
+                    </option>
                     @endforeach
                 </select>
 
@@ -118,13 +207,13 @@
                         <option value="{{ $m }}" {{ request('month') == $m ? 'selected' : '' }}>
                         {{ \Carbon\Carbon::create()->month($m)->translatedFormat('F') }}
                         </option>
-                    @endfor
+                        @endfor
                 </select>
 
                 <!-- 4. FILTER TAHUN -->
                 <select name="year" class="form-select form-select-sm" style="width: 90px;" onchange="this.form.submit()">
                     @for($y=date('Y')+1; $y>=2025; $y--)
-                        <option value="{{ $y }}" {{ (request('year') ?? date('Y')) == $y ? 'selected' : '' }}>{{ $y }}</option>
+                    <option value="{{ $y }}" {{ (request('year') ?? date('Y')) == $y ? 'selected' : '' }}>{{ $y }}</option>
                     @endfor
                 </select>
 
@@ -145,7 +234,7 @@
                             <th width="20%">Detail Job</th>
                             <th width="10%">Tipe Job</th>
                             <th width="15%">Status</th>
-                            
+
                             <th width="15%">
                                 {{ $user->role->name == 'editor' ? 'CREW' : 'EDITOR' }}
                             </th>
@@ -186,27 +275,43 @@
 
                             <!-- 4. STATUS -->
                             <td>
-                                @if($job->status == 'scheduled') <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary">Terjadwal</span>
-                                @elseif($job->status == 'ongoing') <span class="badge bg-warning bg-opacity-10 text-warning border border-warning">Proses</span>
+                                @if($job->status == 'scheduled')
+                                <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary">Terjadwal</span>
+
+                                @elseif($job->status == 'otw')
+                                <span class="badge bg-primary text-white"><i class="bi bi-scooter"></i> OTW</span>
+
+                                @elseif($job->status == 'arrived')
+                                <span class="badge bg-info text-white"><i class="bi bi-geo-alt-fill"></i> Sampai</span>
+
+                                @elseif($job->status == 'ongoing')
+                                <span class="badge bg-warning text-dark"><i class="bi bi-play-fill"></i>Sedang Kerja</span>
+
                                 @elseif($job->status == 'done')
-                                @if($job->editor_status == 'editing') <span class="badge bg-warning text-dark border border-warning">Edit</span>
-                                @elseif($job->editor_status == 'completed') <span class="badge bg-success bg-opacity-10 text-success border border-success">Selesai</span>
-                                @else <span class="badge bg-success bg-opacity-10 text-success border border-success">Selesai</span>
+                                @if($job->editor_status == 'idle')
+                                <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25"><i class="bi bi-hourglass-split"></i>Menunggu Editor</span>
+                                @elseif($job->editor_status == 'editing')
+                                <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25"><i class="bi bi-laptop"></i> Sedang Edit</span>
+                                @elseif($job->editor_status == 'completed')
+                                <span class="badge bg-success"><i class="bi bi-check-lg"></i>Selesai</span>
                                 @endif
+
+                                @elseif($job->status == 'canceled')
+                                <span class="badge bg-dark">Batal</span>
                                 @endif
                             </td>
 
                             <!-- 5. PARTNER -->
                             <td>
                                 @php
-                                    $partnerName = '-';
-                                    if ($user->role->name == 'editor') {
-                                        $crewAssign = $job->assignments->where('user_id', '!=', $user->id)->first();
-                                        $partnerName = $crewAssign ? \App\Models\User::find($crewAssign->user_id)->name : '-';
-                                    } else {
-                                        $editorAssign = $job->assignments->whereNotNull('editor_id')->first();
-                                        $partnerName = $editorAssign ? \App\Models\User::find($editorAssign->editor_id)->name : '-';
-                                    }
+                                $partnerName = '-';
+                                if ($user->role->name == 'editor') {
+                                $crewAssign = $job->assignments->where('user_id', '!=', $user->id)->first();
+                                $partnerName = $crewAssign ? \App\Models\User::find($crewAssign->user_id)->name : '-';
+                                } else {
+                                $editorAssign = $job->assignments->whereNotNull('editor_id')->first();
+                                $partnerName = $editorAssign ? \App\Models\User::find($editorAssign->editor_id)->name : '-';
+                                }
                                 @endphp
                                 <span class="small text-muted">{{ $partnerName }}</span>
                             </td>
@@ -301,21 +406,21 @@
                                                 "{{ $job->notes ?? 'Tidak ada catatan.' }}"
                                             </div>
                                         </div>
-                                        
+
                                         <!-- INFO PARTNER DI POPUP -->
                                         <div class="mb-3">
                                             <label class="text-muted small fw-bold">
                                                 {{ $user->role->name == 'editor' ? 'CREW LAPANGAN' : 'EDITOR (JIKA ADA)' }}
                                             </label>
                                             @php
-                                                $popupPartner = '-';
-                                                if ($user->role->name == 'editor') {
-                                                    $crewP = $job->assignments->where('user_id', '!=', $user->id)->first();
-                                                    $popupPartner = $crewP ? \App\Models\User::find($crewP->user_id)->name : '-';
-                                                } else {
-                                                    $editorP = $job->assignments->whereNotNull('editor_id')->first();
-                                                    $popupPartner = $editorP ? \App\Models\User::find($editorP->editor_id)->name : '-';
-                                                }
+                                            $popupPartner = '-';
+                                            if ($user->role->name == 'editor') {
+                                            $crewP = $job->assignments->where('user_id', '!=', $user->id)->first();
+                                            $popupPartner = $crewP ? \App\Models\User::find($crewP->user_id)->name : '-';
+                                            } else {
+                                            $editorP = $job->assignments->whereNotNull('editor_id')->first();
+                                            $popupPartner = $editorP ? \App\Models\User::find($editorP->editor_id)->name : '-';
+                                            }
                                             @endphp
                                             <div class="fw-bold">{{ $popupPartner }}</div>
                                         </div>
@@ -334,7 +439,7 @@
             </div>
         </div>
     </div>
-    
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
