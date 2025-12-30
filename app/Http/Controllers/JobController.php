@@ -10,6 +10,7 @@ use App\Models\JobAssignment;
 use App\Models\Transaction;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 
 class JobController extends Controller
@@ -120,7 +121,7 @@ class JobController extends Controller
     }
 
     // 5. Proses Update Job
-     // 5. Proses Update Job (DENGAN DETEKSI PERUBAHAN CREW)
+    // 5. Proses Update Job (DENGAN DETEKSI PERUBAHAN CREW)
     public function update(Request $request, Job $job)
     {
         if ($job->status == 'ongoing') {
@@ -135,7 +136,7 @@ class JobController extends Controller
         ]);
 
         // 1. SIMPAN DATA CREW LAMA (Sebelum di-update)
-        $oldCrews = $job->users()->get(); 
+        $oldCrews = $job->users()->get();
 
         DB::transaction(function () use ($request, $job) {
             $job->update([
@@ -160,7 +161,7 @@ class JobController extends Controller
 
         // 3. BANDINGKAN CREW LAMA VS BARU
         $newCrews = $job->users()->get(); // Ambil data baru
-        
+
         $removedCrews = $oldCrews->diff($newCrews); // Siapa yg keluar?
         $addedCrews = $newCrews->diff($oldCrews);   // Siapa yg masuk?
 
@@ -352,12 +353,12 @@ class JobController extends Controller
         }
 
         // --- PERBAIKAN LOGIC NOMOR HP ---
-        
+
         // 1. Cek apakah ada request khusus 'target_phone' (Untuk Crew Lama)?
         if ($request->has('target_phone') && $request->input('target_phone')) {
             $crewPhone = $request->input('target_phone');
             $crewName  = $request->input('target_name') ?? 'Crew';
-        } 
+        }
         // 2. Jika tidak ada, baru ambil Crew dari Database (Untuk Crew Saat Ini)
         else {
             $crew = $job->users->first();
@@ -368,7 +369,7 @@ class JobController extends Controller
         // Format 08 -> 628
         // Hapus karakter selain angka
         $crewPhone = preg_replace('/[^0-9]/', '', $crewPhone);
-        if(substr($crewPhone, 0, 1) == '0') {
+        if (substr($crewPhone, 0, 1) == '0') {
             $crewPhone = '62' . substr($crewPhone, 1);
         }
 
@@ -385,20 +386,28 @@ class JobController extends Controller
         } else {
             $text = "✅ *JOB BARU* ✅\n\nHalo {$crewName}, kamu ditugaskan untuk:\nJudul: {$job->job_title}\nTanggal: {$tgl}\nJam: {$jam}\nLokasi: {$job->location}.\n\nMohon cek dashboard kamu ya!";
         }
-        
+
         $waLink = "https://wa.me/{$crewPhone}?text=" . urlencode($text);
 
         return redirect()->away($waLink);
     }
 
     // 13. Method Baru: Tandai WA Selesai (Manual)
-     public function markWaSent(Job $job)
+    public function markWaSent(Job $job)
     {
         $job->update(['wa_sent_at' => now()]);
-        
+
         // Hapus cache crew lama karena sudah dianggap selesai
         Cache::forget('old_crew_' . $job->id);
 
         return back()->with('success', 'Status WA diperbarui.');
+    }
+
+    public function invoice(Job $job)
+    {
+        $pdf = app('dompdf.wrapper');
+        $pdf->loadView('jobs.invoice', compact('job'));
+
+        return $pdf->stream('invoice-job-' . $job->id . '.pdf');
     }
 }

@@ -308,7 +308,7 @@
                         <i class="bi bi-x-circle me-1"></i> Batal
                     </button>
                 </form>
-                
+
                 @elseif($job->status == 'arrived')
                 <form action="{{ route('jobs.cancel', $job->id) }}" method="POST" onsubmit="return confirm('Yakin ingin membatalkan job ini?');" class="flex-grow-1 flex-md-grow-0">
                     @csrf @method('POST')
@@ -316,7 +316,7 @@
                         <i class="bi bi-x-circle me-1"></i> Batal
                     </button>
                 </form>
-                
+
                 @elseif($job->status == 'ongoing')
                 <button class="btn btn-secondary disabled flex-grow-1 flex-md-grow-0"><i class="bi bi-lock-fill"></i> Sedang Jalan</button>
                 <form action="{{ route('jobs.cancel', $job->id) }}" method="POST" onsubmit="return confirm('Yakin ingin membatalkan job ini?');" class="flex-grow-1 flex-md-grow-0">
@@ -713,6 +713,13 @@
                     </div>
                 </div>
 
+                @if($job->status == 'done' && $job->editor_status == 'completed')
+                <a href="{{ route('jobs.invoice', $job->id) }}"
+                    target="_blank"
+                    class="btn btn-outline-primary fw-bold w-100 mb-2">
+                    <i class="bi bi-file-earmark-pdf me-1"></i> Generate Invoice
+                </a>
+                @endif
 
                 <!-- CARD LINK -->
                 <div class="card card-modern">
