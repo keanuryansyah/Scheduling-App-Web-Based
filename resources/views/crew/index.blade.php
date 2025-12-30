@@ -113,6 +113,7 @@
                     <div class="date-header text-muted">
                         <i class="bi bi-check-circle text-success"></i>
                         {{ \Carbon\Carbon::parse($date)->translatedFormat('l, d F Y') }}
+                        @if(\Carbon\Carbon::parse($date)->isToday()) <span class="badge bg-danger ms-2">HARI INI</span> @endif
                     </div>
 
                     <div class="row g-3">

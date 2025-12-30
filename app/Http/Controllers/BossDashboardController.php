@@ -105,16 +105,25 @@ class BossDashboardController extends Controller
         $waitingEditorJobs = $todaysJobs
             ->where('status', 'done')
             ->whereIn('editor_status', ['idle', 'editing'])
-            ->sortByDesc('job_date');
+            ->sortBy([
+                ['job_date', 'desc'],
+                ['start_time', 'asc'],
+            ]);
 
         $completedJobs = $todaysJobs
             ->where('status', 'done')
             ->where('editor_status', 'completed')
-            ->sortByDesc('job_date');
+            ->sortBy([
+                ['job_date', 'desc'],
+                ['start_time', 'asc'],
+            ]);
 
         $canceledJobs = $todaysJobs
             ->where('status', 'canceled')
-            ->sortByDesc('job_date');
+            ->sortBy([
+                ['job_date', 'desc'],
+                ['start_time', 'asc'],
+            ]);
 
         $stats = [
             'jobs_count'     => $statsJobQuery->count(),

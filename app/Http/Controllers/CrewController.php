@@ -29,18 +29,19 @@ class CrewController extends Controller
         // 2. DATA UNTUK TAMPILAN TABS
         $activeJobs = (clone $query)
             ->whereIn('status', ['scheduled', 'otw', 'arrived', 'ongoing'])
-            ->whereBetween('job_date', [$startOfMonth, $endOfMonth])
+            // ->whereBetween('job_date', [$startOfMonth, $endOfMonth])
             ->orderBy('job_date', 'asc')->orderBy('start_time', 'asc')
             ->get();
 
         $completedJobs = (clone $query)
-            ->where('status', 'done')
-            ->whereBetween('job_date', [$startOfMonth, $endOfMonth])
-            ->orderBy('job_date', 'desc')->orderBy('start_time', 'desc')
+            ->whereIn('status', ['done', 'canceled'])
+            ->orderBy('job_date', 'desc')
+            ->orderBy('start_time', 'asc')
             ->get();
 
+
         // 3. LOGIKA POPUP PINTAR (SESSION BASED - SETIAP LOGIN)
-        
+
         // A. Hitung Total Job Hari Ini (Spesifik tanggal hari ini)
         $todayJobCount = Job::whereHas('assignments', function ($q) use ($userId) {
             $q->where('user_id', $userId);
@@ -131,7 +132,7 @@ class CrewController extends Controller
                 'payment_method' => $request->payment_method,
                 'finished_at' => now() // Catat waktu selesai real
             ]);
-            
+
             // Hapus bagian bagi hasil (sesuai request sebelumnya)
         });
 

@@ -27,7 +27,10 @@ class Job extends Model
         'otw_at',
         'arrived_at',
         'started_at',
-        'finished_at'
+        'finished_at',
+        'editor_started_at',
+        'editor_finished_at',
+        'editor_pc',
     ];
 
 
@@ -38,6 +41,8 @@ class Job extends Model
         'arrived_at' => 'datetime',
         'started_at' => 'datetime',
         'finished_at' => 'datetime',
+        'editor_started_at' => 'datetime',
+        'editor_finished_at' => 'datetime',
     ];
 
     /* ================= RELATIONS ================= */
@@ -74,7 +79,7 @@ class Job extends Model
         );
     }
 
-     public function transactions()
+    public function transactions()
     {
         return $this->hasMany(Transaction::class);
     }

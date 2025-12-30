@@ -123,6 +123,102 @@
             font-size: 0.85rem;
             color: #64748b;
         }
+
+        /* NEWWWW CUSTOM */
+        /* ========================= */
+        /* COMPACT HORIZONTAL TIMELINE */
+        /* ========================= */
+
+        .timeline-horizontal {
+            display: flex;
+            gap: 16px;
+            overflow-x: auto;
+            padding: 16px;
+        }
+
+        .timeline-step {
+            min-width: 180px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 14px;
+            text-align: center;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .timeline-step.active {
+            background: white;
+            border-color: #4f46e5;
+            box-shadow: 0 6px 20px rgba(79, 70, 229, 0.15);
+        }
+
+        .timeline-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin: 0 auto 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .timeline-label {
+            font-weight: 700;
+            font-size: 0.85rem;
+        }
+
+        .timeline-time {
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+
+        .timeline-date {
+            font-size: 0.7rem;
+            color: #94a3b8;
+        }
+
+        /* ========================= */
+        /* TIMELINE ARROW CONNECTOR */
+        /* ========================= */
+
+        .timeline-step {
+            position: relative;
+        }
+
+        /* Garis penghubung */
+        .timeline-step:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            right: -18px;
+            width: 30px;
+            height: 2px;
+            background: #cbd5e1;
+            transform: translateY(-50%);
+        }
+
+        /* Panah */
+        .timeline-step:not(:last-child)::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            right: -26px;
+            border-width: 6px 0 6px 8px;
+            border-style: solid;
+            border-color: transparent transparent transparent #cbd5e1;
+            transform: translateY(-50%);
+        }
+
+        /* Aktif → panah ikut nyala */
+        .timeline-step.active:not(:last-child)::after {
+            background: #4f46e5;
+        }
+
+        .timeline-step.active:not(:last-child)::before {
+            border-left-color: #4f46e5;
+        }
     </style>
 </head>
 
@@ -205,8 +301,30 @@
                     </button>
                 </form>
 
+                @elseif($job->status == 'otw')
+                <form action="{{ route('jobs.cancel', $job->id) }}" method="POST" onsubmit="return confirm('Yakin ingin membatalkan job ini?');" class="flex-grow-1 flex-md-grow-0">
+                    @csrf @method('POST')
+                    <button type="submit" class="btn btn-dark shadow-sm fw-bold w-100">
+                        <i class="bi bi-x-circle me-1"></i> Batal
+                    </button>
+                </form>
+                
+                @elseif($job->status == 'arrived')
+                <form action="{{ route('jobs.cancel', $job->id) }}" method="POST" onsubmit="return confirm('Yakin ingin membatalkan job ini?');" class="flex-grow-1 flex-md-grow-0">
+                    @csrf @method('POST')
+                    <button type="submit" class="btn btn-dark shadow-sm fw-bold w-100">
+                        <i class="bi bi-x-circle me-1"></i> Batal
+                    </button>
+                </form>
+                
                 @elseif($job->status == 'ongoing')
                 <button class="btn btn-secondary disabled flex-grow-1 flex-md-grow-0"><i class="bi bi-lock-fill"></i> Sedang Jalan</button>
+                <form action="{{ route('jobs.cancel', $job->id) }}" method="POST" onsubmit="return confirm('Yakin ingin membatalkan job ini?');" class="flex-grow-1 flex-md-grow-0">
+                    @csrf @method('POST')
+                    <button type="submit" class="btn btn-dark shadow-sm fw-bold w-100">
+                        <i class="bi bi-x-circle me-1"></i> Batal
+                    </button>
+                </form>
 
                 @elseif($job->status == 'done')
                 <button class="btn btn-success disabled flex-grow-1 flex-md-grow-0"><i class="bi bi-check-circle-fill"></i> Selesai</button>
@@ -384,115 +502,133 @@
                     </div>
                 </div>
 
-                <!-- CARD 3: TIMELINE PENGERJAAN -->
+                <!-- CARD 3: TIMELINE CREW -->
                 <div class="card card-modern mt-4">
                     <div class="card-header-modern d-flex justify-content-between align-items-center">
                         <h6 class="fw-bold mb-0 text-uppercase ls-1 text-dark">
                             <i class="bi bi-clock-history me-2"></i> Timeline Crew
                         </h6>
 
-                        <!-- Status Live -->
                         @if($job->status == 'ongoing')
-                        <span class="badge bg-warning text-dark blink">LIVE</span>
-                        <style>
-                            .blink {
-                                animation: blinker 1.5s linear infinite;
-                            }
-
-                            @keyframes blinker {
-                                50% {
-                                    opacity: 0;
-                                }
-                            }
-                        </style>
+                        <span class="badge bg-warning text-dark">LIVE</span>
                         @endif
                     </div>
-                    <div class="card-body p-0">
-                        <ul class="list-group list-group-flush">
 
-                            <!-- 1. OTW -->
-                            <li class="list-group-item p-3 d-flex justify-content-between align-items-center {{ $job->otw_at ? 'bg-light' : '' }}">
-                                <div class="d-flex align-items-center">
-                                    <div class="icon-box {{ $job->otw_at ? 'bg-primary text-white' : 'bg-secondary text-white opacity-25' }}" style="width: 32px; height: 32px; border-radius: 50%;">
-                                        <i class="bi bi-scooter"></i>
-                                    </div>
-                                    <div>
-                                        <span class="d-block fw-bold {{ $job->otw_at ? 'text-dark' : 'text-muted' }}">Berangkat (OTW)</span>
-                                        @if($job->otw_at)
-                                        <small class="text-muted">{{ $job->otw_at->translatedFormat('d M Y') }}</small>
-                                        @endif
-                                    </div>
-                                </div>
-                                <span class="fw-bold {{ $job->otw_at ? 'text-primary' : 'text-muted' }}">
-                                    {{ $job->otw_at ? $job->otw_at->format('H:i') : '--:--' }}
-                                </span>
-                            </li>
+                    <div class="timeline-horizontal">
 
-                            <!-- 2. ARRIVED -->
-                            <li class="list-group-item p-3 d-flex justify-content-between align-items-center {{ $job->arrived_at ? 'bg-light' : '' }}">
-                                <div class="d-flex align-items-center">
-                                    <div class="icon-box {{ $job->arrived_at ? 'bg-info text-white' : 'bg-secondary text-white opacity-25' }}" style="width: 32px; height: 32px; border-radius: 50%;">
-                                        <i class="bi bi-geo-alt-fill"></i>
-                                    </div>
-                                    <div>
-                                        <span class="d-block fw-bold {{ $job->arrived_at ? 'text-dark' : 'text-muted' }}">Sampai Lokasi</span>
-                                    </div>
-                                </div>
-                                <span class="fw-bold {{ $job->arrived_at ? 'text-info' : 'text-muted' }}">
-                                    {{ $job->arrived_at ? $job->arrived_at->format('H:i') : '--:--' }}
-                                </span>
-                            </li>
+                        {{-- OTW --}}
+                        <div class="timeline-step {{ $job->otw_at ? 'active' : '' }}">
+                            <div class="timeline-icon {{ $job->otw_at ? 'bg-primary text-white' : 'bg-secondary text-white opacity-25' }}">
+                                <i class="bi bi-scooter"></i>
+                            </div>
+                            <div class="timeline-label">OTW</div>
+                            <div class="timeline-time">{{ $job->otw_at ? $job->otw_at->format('H:i') : '--:--' }}</div>
+                            <div class="timeline-date">{{ $job->otw_at ? $job->otw_at->translatedFormat('d M Y') : '' }}</div>
+                        </div>
 
-                            <!-- 3. STARTED -->
-                            <li class="list-group-item p-3 d-flex justify-content-between align-items-center {{ $job->started_at ? 'bg-light' : '' }}">
-                                <div class="d-flex align-items-center">
-                                    <div class="icon-box {{ $job->started_at ? 'bg-warning text-dark' : 'bg-secondary text-white opacity-25' }}" style="width: 32px; height: 32px; border-radius: 50%;">
-                                        <i class="bi bi-play-fill"></i>
-                                    </div>
-                                    <div>
-                                        <span class="d-block fw-bold {{ $job->started_at ? 'text-dark' : 'text-muted' }}">Mulai Kerja</span>
-                                    </div>
-                                </div>
-                                <span class="fw-bold {{ $job->started_at ? 'text-warning' : 'text-muted' }}">
-                                    {{ $job->started_at ? $job->started_at->format('H:i') : '--:--' }}
-                                </span>
-                            </li>
+                        {{-- ARRIVED --}}
+                        <div class="timeline-step {{ $job->arrived_at ? 'active' : '' }}">
+                            <div class="timeline-icon {{ $job->arrived_at ? 'bg-info text-white' : 'bg-secondary text-white opacity-25' }}">
+                                <i class="bi bi-geo-alt-fill"></i>
+                            </div>
+                            <div class="timeline-label">Sampe</div>
+                            <div class="timeline-time">{{ $job->arrived_at ? $job->arrived_at->format('H:i') : '--:--' }}</div>
+                            <div class="timeline-date">{{ $job->arrived_at ? $job->arrived_at->translatedFormat('d M Y') : '' }}</div>
+                        </div>
 
-                            <!-- 4. FINISHED -->
-                            <li class="list-group-item p-3 d-flex justify-content-between align-items-center {{ $job->finished_at ? 'bg-light' : '' }}">
-                                <div class="d-flex align-items-center">
-                                    <div class="icon-box {{ $job->finished_at ? 'bg-success text-white' : 'bg-secondary text-white opacity-25' }}" style="width: 32px; height: 32px; border-radius: 50%;">
-                                        <i class="bi bi-check-lg"></i>
-                                    </div>
-                                    <div>
-                                        <span class="d-block fw-bold {{ $job->finished_at ? 'text-dark' : 'text-muted' }}">Selesai</span>
-                                    </div>
-                                </div>
-                                <span class="fw-bold {{ $job->finished_at ? 'text-success' : 'text-muted' }}">
-                                    {{ $job->finished_at ? $job->finished_at->format('H:i') : '--:--' }}
-                                </span>
-                            </li>
+                        {{-- START --}}
+                        <div class="timeline-step {{ $job->started_at ? 'active' : '' }}">
+                            <div class="timeline-icon {{ $job->started_at ? 'bg-warning text-dark' : 'bg-secondary text-white opacity-25' }}">
+                                <i class="bi bi-play-fill"></i>
+                            </div>
+                            <div class="timeline-label">Mulai Job</div>
+                            <div class="timeline-time">{{ $job->started_at ? $job->started_at->format('H:i') : '--:--' }}</div>
+                            <div class="timeline-date">{{ $job->started_at ? $job->started_at->translatedFormat('d M Y') : '' }}</div>
+                        </div>
 
-                        </ul>
+                        {{-- FINISH --}}
+                        <div class="timeline-step {{ $job->finished_at ? 'active' : '' }}">
+                            <div class="timeline-icon {{ $job->finished_at ? 'bg-success text-white' : 'bg-secondary text-white opacity-25' }}">
+                                <i class="bi bi-check-lg"></i>
+                            </div>
+                            <div class="timeline-label">Selesai Job</div>
+                            <div class="timeline-time">{{ $job->finished_at ? $job->finished_at->format('H:i') : '--:--' }}</div>
+                            <div class="timeline-date">{{ $job->finished_at ? $job->finished_at->translatedFormat('d M Y') : '' }}</div>
+                        </div>
+
                     </div>
                 </div>
+
+
+                <!-- TIMELINE EDITOR -->
+
+                <div class="card card-modern mt-4">
+                    <div class="card-header-modern">
+                        <h6 class="fw-bold mb-0 text-uppercase ls-1 text-dark">
+                            <i class="bi bi-laptop me-2"></i> Timeline Editor
+                        </h6>
+                    </div>
+
+                    <div class="timeline-horizontal">
+
+                        {{-- START EDIT --}}
+                        <div class="timeline-step {{ $job->editor_started_at ? 'active' : '' }}">
+                            <div class="timeline-icon {{ $job->editor_started_at ? 'bg-warning text-dark' : 'bg-secondary text-white opacity-25' }}">
+                                <i class="bi bi-play-fill"></i>
+                            </div>
+                            <div class="timeline-label">Mulai Edit</div>
+                            <div class="timeline-time">{{ $job->editor_started_at ? $job->editor_started_at->format('H:i') : '--:--' }}</div>
+                            <div class="timeline-date">{{ $job->editor_started_at ? $job->editor_started_at->translatedFormat('d M Y') : '' }}</div>
+                        </div>
+
+                        {{-- FINISH EDIT --}}
+                        <div class="timeline-step {{ $job->editor_finished_at ? 'active' : '' }}">
+                            <div class="timeline-icon {{ $job->editor_finished_at ? 'bg-success text-white' : 'bg-secondary text-white opacity-25' }}">
+                                <i class="bi bi-check-lg"></i>
+                            </div>
+                            <div class="timeline-label">Selesai Edit</div>
+                            <div class="timeline-time">{{ $job->editor_finished_at ? $job->editor_finished_at->format('H:i') : '--:--' }}</div>
+                            <div class="timeline-date">{{ $job->editor_finished_at ? $job->editor_finished_at->translatedFormat('d M Y') : '' }}</div>
+                        </div>
+
+                        {{-- PC --}}
+                        @if($job->editor_pc)
+                        <div class="timeline-step active">
+                            <div class="timeline-icon bg-dark text-white">
+                                <i class="bi bi-pc-display"></i>
+                            </div>
+                            <div class="timeline-label">PC digunakan</div>
+                            <div class="timeline-time">PC {{ $job->editor_pc }}</div>
+                        </div>
+                        @endif
+
+                    </div>
+                </div>
+
 
                 <div class="col-12 mt-2 pt-3 border-top border-light">
                     <div class="d-flex align-items-center justify-content-between">
-                        <span class="label-text mb-0"><i class="bi bi-pencil-square me-1"></i> Added By: </span>
+                        <span class="label-text mb-0">
+                            <i class="bi bi-pencil-square me-1"></i> Added By:
+                        </span>
 
-                        @if($job->creator->role->name == 'boss')
+                        @if($job->creator && $job->creator->role && $job->creator->role->name === 'boss')
                         <span class="badge bg-danger bg-opacity-10 text-danger border border-danger px-3 py-2 rounded-pill">
                             <i class="bi bi-suit-tie-fill me-1"></i> BOSS
                         </span>
-                        @else
+                        @elseif($job->creator)
                         <span class="badge bg-info bg-opacity-10 text-info border border-info px-3 py-2 rounded-pill">
-                            <i class="bi bi-person-badge-fill me-1"></i> ADMIN: {{ $job->creator->name }}
+                            <i class="bi bi-person-badge-fill me-1"></i>
+                            ADMIN: {{ $job->creator->name }}
+                        </span>
+                        @else
+                        <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary px-3 py-2 rounded-pill">
+                            <i class="bi bi-question-circle me-1"></i>
+                            Unknown
                         </span>
                         @endif
                     </div>
                 </div>
-
 
             </div>
 
@@ -578,7 +714,6 @@
                 </div>
 
 
-                <!-- CARD LINK -->
                 <!-- CARD LINK -->
                 <div class="card card-modern">
                     <div class="card-header-modern bg-primary bg-opacity-10 d-flex justify-content-between align-items-center">

@@ -18,11 +18,11 @@ class EditorController extends Controller
         // 1. JOB AKTIF (Idle & Editing)
         $activeJobs = Job::with(['type', 'assignments'])
             ->whereIn('editor_status', ['idle', 'editing'])
-            ->where(function($query) use ($editorId) {
+            ->where(function ($query) use ($editorId) {
                 $query->where('status', 'done')
-                      ->orWhereHas('assignments', function($q) use ($editorId) {
-                          $q->where('user_id', $editorId);
-                      });
+                    ->orWhereHas('assignments', function ($q) use ($editorId) {
+                        $q->where('user_id', $editorId);
+                    });
             })
             ->orderBy('job_date', 'asc')
             ->orderBy('start_time', 'asc')
@@ -31,7 +31,7 @@ class EditorController extends Controller
         // 2. JOB SELESAI (Completed - Hanya milik saya)
         $completedJobs = Job::with(['type', 'assignments'])
             ->where('editor_status', 'completed')
-            ->whereHas('assignments', function($q) use ($editorId) {
+            ->whereHas('assignments', function ($q) use ($editorId) {
                 // Pastikan yang muncul cuma job yang diedit oleh user ini
                 $q->where('editor_id', $editorId);
             })
@@ -55,7 +55,7 @@ class EditorController extends Controller
         // Proteksi Race Condition (Cek jika sudah diambil orang lain)
         if ($job->editor_status != 'idle') {
             $assignment = $job->assignments->first();
-            
+
             if ($assignment && $assignment->editor_id) {
                 // Jika user sendiri yang ambil, biarkan
                 if ($assignment->editor_id == auth()->id()) {
@@ -77,7 +77,12 @@ class EditorController extends Controller
             if ($job->editor_status != 'idle') return;
 
             // 1. Update Status
-            $job->update(['editor_status' => 'editing']);
+            $job->update(
+                [
+                    'editor_status' => 'editing',
+                    'editor_started_at' => now(),
+                ]
+            );
 
             // 2. Tandai Editor di Assignment
             \App\Models\JobAssignment::where('job_id', $job->id)
@@ -93,13 +98,15 @@ class EditorController extends Controller
     // 4. Selesai Edit (UPDATE: MURNI UPDATE STATUS & LINK SAJA)
     public function finishJob(Request $request, Job $job)
     {
-        $request->validate(['result_link' => 'required|url']);
+        $request->validate(['result_link' => 'required|url', 'pc_number'   => 'required|integer|min:1',]);
 
         DB::transaction(function () use ($request, $job) {
             // 1. Update Link & Status Selesai
             $job->update([
                 'result_link' => $request->result_link,
-                'editor_status' => 'completed'
+                'editor_status' => 'completed',
+                'editor_finished_at' => now(),
+                'editor_pc'          => $request->pc_number,
             ]);
 
             // 2. Pastikan Editor ID tercatat (jaga-jaga)

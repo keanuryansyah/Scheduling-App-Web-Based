@@ -1,13 +1,31 @@
 <div class="col-md-6 col-lg-4">
     <div class="card job-card p-3 h-100">
-        
+
         <!-- Status Badge -->
         <div class="status-badge">
-            @if($job->status == 'scheduled') <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 px-2 py-1">Terjadwal</span>
-            @elseif($job->status == 'otw') <span class="badge bg-info text-white px-2 py-1">OTW</span>
-            @elseif($job->status == 'arrived') <span class="badge bg-primary text-white px-2 py-1">Sampai</span>
-            @elseif($job->status == 'ongoing') <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 px-2 py-1">Proses</span>
-            @elseif($job->status == 'done') <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1">Selesai</span>
+            @if($job->status == 'scheduled')
+            <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary">Terjadwal</span>
+
+            @elseif($job->status == 'otw')
+            <span class="badge bg-primary text-white"><i class="bi bi-scooter"></i> OTW</span>
+
+            @elseif($job->status == 'arrived')
+            <span class="badge bg-info text-white"><i class="bi bi-geo-alt-fill"></i> Sampai</span>
+
+            @elseif($job->status == 'ongoing')
+            <span class="badge bg-warning text-dark"><i class="bi bi-play-fill"></i>Sedang Kerja</span>
+
+            @elseif($job->status == 'done')
+            @if($job->editor_status == 'idle')
+            <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25"><i class="bi bi-hourglass-split"></i>Menunggu Editor</span>
+            @elseif($job->editor_status == 'editing')
+            <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25"><i class="bi bi-laptop"></i> Sedang Edit</span>
+            @elseif($job->editor_status == 'completed')
+            <span class="badge bg-success"><i class="bi bi-check-lg"></i>Selesai</span>
+            @endif
+
+            @elseif($job->status == 'canceled')
+            <span class="badge bg-dark">Batal</span>
             @endif
         </div>
 
@@ -33,7 +51,7 @@
             <div class="d-flex align-items-center gap-2">
                 <i class="bi bi-clock text-primary"></i>
                 <span class="small text-muted">
-                    {{ \Carbon\Carbon::parse($job->start_time)->format('H:i') }} - 
+                    {{ \Carbon\Carbon::parse($job->start_time)->format('H:i') }} -
                     {{ \Carbon\Carbon::parse($job->end_time)->format('H:i') }}
                 </span>
             </div>
@@ -45,28 +63,35 @@
                 <i class="bi bi-info-circle me-1"></i> Detail
             </a>
 
-            @if($job->status == 'scheduled')
-                <form action="{{ route('crew.progress', ['job' => $job->id, 'status' => 'otw']) }}" method="POST">
-                    @csrf
-                    <button class="btn btn-primary w-100 fw-bold btn-action shadow-sm"><i class="bi bi-scooter me-1"></i> OTW Lokasi</button>
-                </form>
-            @elseif($job->status == 'otw')
-                <form action="{{ route('crew.progress', ['job' => $job->id, 'status' => 'arrived']) }}" method="POST">
-                    @csrf
-                    <button class="btn btn-info text-white w-100 fw-bold btn-action shadow-sm"><i class="bi bi-geo-alt-fill me-1"></i> Sampai</button>
-                </form>
-            @elseif($job->status == 'arrived')
-                <form action="{{ route('crew.progress', ['job' => $job->id, 'status' => 'ongoing']) }}" method="POST">
-                    @csrf
-                    <button class="btn btn-warning text-dark w-100 fw-bold btn-action shadow-sm"><i class="bi bi-play-circle-fill me-1"></i> Mulai</button>
-                </form>
-            @elseif($job->status == 'ongoing')
-                <button class="btn btn-success w-100 fw-bold btn-action shadow-sm" data-bs-toggle="modal" data-bs-target="#finishModal{{ $job->id }}">
-                    <i class="bi bi-check-lg me-1"></i> Selesai
-                </button>
+            @if(!\Carbon\Carbon::parse($date)->isToday() && $job->status == 'scheduled')
+            <button class="btn w-100 fw-bold btn-action shadow-sm disabled btn-secondary"><i class="bi bi-lock-fill"></i> Job Terkunci</button>
             @else
-                <button class="btn btn-secondary w-100 btn-action bg-opacity-25 border-0 text-muted" disabled>Selesai</button>
+
+            @if($job->status == 'scheduled')
+            <form action="{{ route('crew.progress', ['job' => $job->id, 'status' => 'otw']) }}" method="POST">
+                @csrf
+                <button class="btn btn-primary w-100 fw-bold btn-action shadow-sm"><i class="bi bi-scooter me-1"></i> OTW Lokasi</button>
+            </form>
+            @elseif($job->status == 'otw')
+            <form action="{{ route('crew.progress', ['job' => $job->id, 'status' => 'arrived']) }}" method="POST">
+                @csrf
+                <button class="btn btn-info text-white w-100 fw-bold btn-action shadow-sm"><i class="bi bi-geo-alt-fill me-1"></i> Sampai</button>
+            </form>
+            @elseif($job->status == 'arrived')
+            <form action="{{ route('crew.progress', ['job' => $job->id, 'status' => 'ongoing']) }}" method="POST">
+                @csrf
+                <button class="btn btn-warning text-dark w-100 fw-bold btn-action shadow-sm"><i class="bi bi-play-circle-fill me-1"></i> Mulai</button>
+            </form>
+            @elseif($job->status == 'ongoing')
+            <button class="btn btn-success w-100 fw-bold btn-action shadow-sm" data-bs-toggle="modal" data-bs-target="#finishModal{{ $job->id }}">
+                <i class="bi bi-check-lg me-1"></i> Selesai
+            </button>
+            @else
+            <button class="btn btn-secondary w-100 btn-action bg-opacity-25 border-0 text-muted" disabled>Selesai</button>
             @endif
+
+            @endif
+
         </div>
     </div>
 </div>
@@ -96,12 +121,12 @@
                         <label class="form-label fw-bold small text-danger">UPLOAD BUKTI UANG / KUITANSI</label>
                         <input type="file" name="proof" class="form-control">
                     </div>
-                    
+
                     <!-- NEW: INPUT NOMINAL JIKA CASH (Jika Boss belum set harga) -->
                     @if($job->amount == 0)
                     <div class="mb-3 d-none" id="amountDiv{{ $job->id }}">
-                         <label class="form-label fw-bold small text-success">TOTAL UANG DITERIMA (RP)</label>
-                         <input type="number" name="amount" class="form-control border-success" placeholder="Contoh: 500000">
+                        <label class="form-label fw-bold small text-success">TOTAL UANG DITERIMA (RP)</label>
+                        <input type="number" name="amount" class="form-control border-success" placeholder="Contoh: 500000">
                     </div>
                     @endif
                 </div>

@@ -12,7 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('jobs', function (Blueprint $table) {
-            //
+            $table->timestamp('editor_started_at')->nullable()->after('started_at');
+            $table->timestamp('editor_finished_at')->nullable()->after('editor_started_at');
+            $table->unsignedTinyInteger('editor_pc')->nullable()->after('editor_finished_at');
         });
     }
 
