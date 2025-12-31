@@ -59,6 +59,10 @@ Route::middleware(['auth', 'role:boss,admin'])->group(function () {
     Route::get('/jobs/{job}/invoice', [JobController::class, 'invoice'])
     ->name('jobs.invoice');
 
+    Route::post('/jobs/invoice/preview', [JobController::class, 'invoicePreview'])
+    ->name('jobs.invoice.preview');
+
+
 });
 
 

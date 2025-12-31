@@ -296,15 +296,22 @@
 
                 <form action="{{ route('jobs.cancel', $job->id) }}" method="POST" onsubmit="return confirm('Yakin ingin membatalkan job ini?');" class="flex-grow-1 flex-md-grow-0">
                     @csrf @method('POST')
-                    <button type="submit" class="btn btn-dark shadow-sm fw-bold w-100">
+                    <button
+                        type="button"
+                        class="btn btn-dark shadow-sm fw-bold w-100"
+                        onclick="openCancelModal({{ $job->id }})">
                         <i class="bi bi-x-circle me-1"></i> Batal
                     </button>
+
                 </form>
 
                 @elseif($job->status == 'otw')
                 <form action="{{ route('jobs.cancel', $job->id) }}" method="POST" onsubmit="return confirm('Yakin ingin membatalkan job ini?');" class="flex-grow-1 flex-md-grow-0">
                     @csrf @method('POST')
-                    <button type="submit" class="btn btn-dark shadow-sm fw-bold w-100">
+                    <button
+                        type="button"
+                        class="btn btn-dark shadow-sm fw-bold w-100"
+                        onclick="openCancelModal({{ $job->id }})">
                         <i class="bi bi-x-circle me-1"></i> Batal
                     </button>
                 </form>
@@ -312,26 +319,36 @@
                 @elseif($job->status == 'arrived')
                 <form action="{{ route('jobs.cancel', $job->id) }}" method="POST" onsubmit="return confirm('Yakin ingin membatalkan job ini?');" class="flex-grow-1 flex-md-grow-0">
                     @csrf @method('POST')
-                    <button type="submit" class="btn btn-dark shadow-sm fw-bold w-100">
+                    <button
+                        type="button"
+                        class="btn btn-dark shadow-sm fw-bold w-100"
+                        onclick="openCancelModal({{ $job->id }})">
                         <i class="bi bi-x-circle me-1"></i> Batal
                     </button>
                 </form>
 
                 @elseif($job->status == 'ongoing')
                 <button class="btn btn-secondary disabled flex-grow-1 flex-md-grow-0"><i class="bi bi-lock-fill"></i> Sedang Jalan</button>
-                <form action="{{ route('jobs.cancel', $job->id) }}" method="POST" onsubmit="return confirm('Yakin ingin membatalkan job ini?');" class="flex-grow-1 flex-md-grow-0">
-                    @csrf @method('POST')
-                    <button type="submit" class="btn btn-dark shadow-sm fw-bold w-100">
-                        <i class="bi bi-x-circle me-1"></i> Batal
-                    </button>
-                </form>
 
                 @elseif($job->status == 'done')
                 <button class="btn btn-success disabled flex-grow-1 flex-md-grow-0"><i class="bi bi-check-circle-fill"></i> Selesai</button>
 
                 @elseif($job->status == 'canceled')
-                <button class="btn btn-secondary disabled flex-grow-1 flex-md-grow-0"><i class="bi bi-slash-circle"></i> Dibatalkan</button>
+                <div class="d-flex gap-2 align-items-center">
+                    <button class="btn btn-secondary disabled">
+                        <i class="bi bi-slash-circle"></i> Dibatalkan
+                    </button>
+
+                    <button
+                        type="button"
+                        class="btn btn-outline-secondary"
+                        data-bs-toggle="modal"
+                        data-bs-target="#cancelNotesModal">
+                        <i class="bi bi-info-circle"></i>
+                    </button>
+                </div>
                 @endif
+
 
                 <!-- Tombol Hapus -->
                 <form action="{{ route('jobs.destroy', $job->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus job ini?');" class="flex-grow-1 flex-md-grow-0">
@@ -713,13 +730,20 @@
                     </div>
                 </div>
 
-                @if($job->status == 'done' && $job->editor_status == 'completed')
-                <a href="{{ route('jobs.invoice', $job->id) }}"
-                    target="_blank"
-                    class="btn btn-outline-primary fw-bold w-100 mb-2">
-                    <i class="bi bi-file-earmark-pdf me-1"></i> Generate Invoice
-                </a>
-                @endif
+                @if($job->status == 'done' && $job->editor_status == 'completed') <button type="button" class="btn btn-outline-primary fw-bold w-100 mb-2" onclick="handleInvoice({{ $job->id }}, {{ $job->amount ?? '0' }})"> <i class="bi bi-file-earmark-pdf me-1"></i> Generate Invoice </button>
+                <div class="modal fade" id="amountModal" tabindex="-1">
+                    <div class="modal-dialog">
+                        <form method="POST" action="{{ route('jobs.invoice.preview') }}"> @csrf <input type="hidden" name="job_id" id="job_id">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Masukkan Total Tagihan</h5> <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body"> <label class="form-label">Total yang harus dibayar</label> <input type="number" name="invoice_amount" class="form-control" required min="0"> </div>
+                                <div class="modal-footer"> <button class="btn btn-primary"> Generate Invoice </button> </div>
+                            </div>
+                        </form>
+                    </div>
+                </div> @endif
 
                 <!-- CARD LINK -->
                 <div class="card card-modern">
@@ -862,10 +886,96 @@
         </div>
     </div>
 
+    <!-- CANCEL MODAL -->
+    <div class="modal fade" id="cancelModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <form method="POST" action="{{ route('jobs.cancel', $job->id) }}">
+                @csrf
+
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title text-danger">
+                            <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                            Batalkan Job
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+
+                    <div class="modal-body">
+                        <label class="form-label fw-bold">
+                            Alasan Pembatalan <span class="text-danger">*</span>
+                        </label>
+                        <textarea
+                            name="cancel_notes"
+                            class="form-control"
+                            rows="4"
+                            placeholder="Contoh: Lapangan banjir, klien reschedule, dll"
+                            required></textarea>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button"
+                            class="btn btn-secondary"
+                            data-bs-dismiss="modal">
+                            Batal
+                        </button>
+
+                        <button type="submit"
+                            class="btn btn-danger"
+                            onclick="return confirm('Yakin ingin membatalkan job ini?')">
+                            Ya, Batalkan Job
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal fade" id="cancelNotesModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title text-danger">
+                        <i class="bi bi-exclamation-circle me-1"></i>
+                        Alasan Pembatalan
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    @if($job->cancel_notes)
+                    <p class="mb-0 text-muted">
+                        {{ $job->cancel_notes }}
+                    </p>
+                    @else
+                    <p class="mb-0 text-muted fst-italic">
+                        Tidak ada catatan pembatalan.
+                    </p>
+                    @endif
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">
+                        Tutup
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <!-- Script Copy -->
     <script>
+        function openCancelModal(jobId) {
+            const modal = new bootstrap.Modal(
+                document.getElementById('cancelModal')
+            );
+            modal.show();
+        }
+
         function toggleLink(open) {
             const linkArea = document.getElementById('linkArea');
             const lockIcon = document.getElementById('lockIcon');
@@ -895,8 +1005,20 @@
             navigator.clipboard.writeText(copyText.value);
             alert("Link berhasil disalin!");
         }
-    </script>
 
+        function handleInvoice(jobId, amount) {
+            if (amount == 0) {
+                document.getElementById('job_id').value = jobId;
+
+                const modal = new bootstrap.Modal(
+                    document.getElementById('amountModal')
+                );
+                modal.show();
+            } else {
+                window.open(`/jobs/${jobId}/invoice`, '_blank');
+            }
+        }
+    </script>
 
 
 </body>

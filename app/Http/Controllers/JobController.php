@@ -297,25 +297,28 @@ class JobController extends Controller
         return back()->with('success', 'Pembayaran diterima! Uang masuk kas Boss (Full).');
     }
 
-    public function cancel(Job $job)
+    public function cancel(Request $request, Job $job)
     {
-        // Proteksi: Hanya job 'scheduled' yang bisa dicancel
-        // Jika sudah ongoing/done, biasanya tidak boleh cancel (kecuali kebijakan boss beda)
         if ($job->status == 'done') {
             return back()->with('error', 'Job sudah selesai, tidak bisa dibatalkan.');
         }
 
-        // Ubah status jadi 'canceled'
-        $job->update(['status' => 'canceled']);
+        $request->validate([
+            'cancel_notes' => 'required|string',
+        ]);
 
-        // Opsional: Hapus assignments agar crew jadi free lagi jadwalnya
-        // $job->assignments()->delete(); 
+        $job->update([
+            'status' => 'canceled',
+            'cancel_notes' => $request->cancel_notes,
+        ]);
 
         if (auth()->user()->role->name == 'admin') {
-            return redirect()->route('admin.dashboard')->with('success', 'Job berhasil dibuat!');
+            return redirect()->route('admin.dashboard')->with('success', 'Job berhasil dibatalkan!');
         }
-        return redirect()->route('boss.dashboard')->with('success', 'Job berhasil dibuat!');
+
+        return redirect()->route('boss.dashboard')->with('success', 'Job berhasil dibatalkan!');
     }
+
 
     public function updateLink(Request $request, Job $job)
     {
@@ -383,6 +386,8 @@ class JobController extends Controller
             $text = "⛔ *INFO PERGANTIAN CREW* ⛔\n\nHalo {$crewName}, mohon maaf untuk job:\nJudul: *{$job->job_title}*\nTanggal: {$tgl}\n\nTugasmu telah digantikan oleh crew lain. Untuk info lebih detail sisa job, Mohon cek dashboard kamu ya!";
         } elseif ($type == 'revisi_update') {
             $text = "⚠️ *INFO REVISI JADWAL* ⚠️\n\nHalo {$crewName}, ada perubahan data:\nJudul: {$job->job_title}\nTanggal: {$tgl}\nJam: {$jam}\nLokasi: {$job->location}.\n\nMohon cek dashboard kamu ya!";
+        } elseif ($type == 'cancel_job') {
+            $text = "⛔ *JOB DIBATALKAN* ⛔\n\nHalo {$crewName},\n\nMohon maaf, job berikut *DIBATALKAN*:\n\nJudul: *{$job->job_title}*\nTanggal: {$tgl}\nJam: {$jam}\n\nAlasan:\n" . ($job->cancel_notes ?? 'Tidak ada keterangan tambahan.') . "\n\nTerima kasih atas pengertiannya 🙏";
         } else {
             $text = "✅ *JOB BARU* ✅\n\nHalo {$crewName}, kamu ditugaskan untuk:\nJudul: {$job->job_title}\nTanggal: {$tgl}\nJam: {$jam}\nLokasi: {$job->location}.\n\nMohon cek dashboard kamu ya!";
         }
@@ -408,6 +413,22 @@ class JobController extends Controller
         $pdf = app('dompdf.wrapper');
         $pdf->loadView('jobs.invoice', compact('job'));
 
+        session()->forget('invoice_amount');
+
         return $pdf->stream('invoice-job-' . $job->id . '.pdf');
+    }
+
+    public function invoicePreview(Request $request)
+    {
+        $request->validate([
+            'job_id' => 'required|exists:jobs,id',
+            'invoice_amount' => 'required|numeric|min:0',
+        ]);
+
+        session([
+            'invoice_amount' => $request->invoice_amount,
+        ]);
+
+        return redirect()->route('jobs.invoice', $request->job_id,);
     }
 }

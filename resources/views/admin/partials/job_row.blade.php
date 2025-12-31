@@ -83,6 +83,20 @@
     <td class="text-end pe-4">
         <div class="btn-group">
 
+         {{-- KHUSUS JOB DIBATALKAN --}}
+            @if($job->status == 'canceled')
+            <a href="{{ route('jobs.sendWa', [
+            'job' => $job->id,
+            'type' => 'cancel_job',
+            'no_update' => 1
+        ]) }}"
+                target="_blank"
+                class="btn btn-sm btn-outline-danger">
+                <i class="bi bi-whatsapp"></i> Kirim Info Batal
+            </a>
+
+            @else
+
             @if($job->users->isNotEmpty() || session('crew_changes'))
             @php
             $isSent = $job->wa_sent_at != null;
@@ -166,6 +180,7 @@
                     </li>
                     @endif
 
+
                     <li>
                         <hr class="dropdown-divider">
                     </li>
@@ -193,7 +208,7 @@
                 <i class="bi bi-whatsapp"></i> Kirim WA
             </a>
             @endif
-
+            @endif
             @endif
 
             <a href="{{ route('jobs.show', $job->id) }}" class="btn btn-outline-primary btn-sm ms-1"><i class="bi bi-eye"></i></a>

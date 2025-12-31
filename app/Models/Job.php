@@ -31,6 +31,7 @@ class Job extends Model
         'editor_started_at',
         'editor_finished_at',
         'editor_pc',
+        'cancel_notes'
     ];
 
 

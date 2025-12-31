@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <title>Invoice - {{ $job->job_title }}</title>
@@ -74,7 +75,8 @@
             text-transform: uppercase;
         }
 
-        table th, table td {
+        table th,
+        table td {
             border: 1px solid #e5e7eb;
             padding: 8px;
         }
@@ -122,22 +124,25 @@
             <div class="value">INV-{{ $job->id }}</div>
 
             <div class="label">Tanggal Invoice Dibuat</div>
-            <div class="value">{{ now()->format('d F Y') }}</div>
+            <div class="value">{{ now()->translatedFormat('d F Y') }}
+            </div>
         </div>
     </div>
 
     <!-- CLIENT & JOB INFO -->
     <div class="box">
         <div class="box-title">Informasi Klien</div>
-        <div class="value">{{ $job->client_name }}</div>
-        <div>{{ $job->client_phone }}</div>
+        <div class="value">KLIEN: {{ $job->client_name }}</div>
+        <div>NO HP: {{ $job->client_phone }}</div>
     </div>
 
     <div class="box">
         <div class="box-title">Detail Pekerjaan</div>
-        <div class="value">{{ $job->job_title }}</div>
+        <div class="value text-uppercase">{{ $job->job_title }}</div>
         <div>Jenis Pekerjaan: {{ $job->type->job_type_name ?? '-' }}</div>
-        <div>Tanggal: {{ $job->job_date->format('d F Y') }}</div>
+        <div>Tanggal:
+            {{ $job->job_date->translatedFormat('d F Y') }}
+        </div>
         <div>Jam: {{ $job->start_time }} - {{ $job->end_time }}</div>
         <div>Lokasi: {{ $job->location }}</div>
     </div>
@@ -167,9 +172,14 @@
     <!-- TOTAL -->
     <div class="total-box">
         <div class="total-label">Total Tagihan</div>
+        @php
+        $amount = session('invoice_amount') ?? $job->amount;
+        @endphp
+
         <div class="total-value">
-            Rp {{ number_format($job->amount, 0, ',', '.') }}
+            Rp {{ number_format($amount, 0, ',', '.') }}
         </div>
+
         <div class="label">
             Status Pembayaran: (unpaid)
         </div>
@@ -182,4 +192,5 @@
     </div>
 
 </body>
+
 </html>
