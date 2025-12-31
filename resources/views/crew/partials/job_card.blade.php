@@ -59,7 +59,8 @@
 
         <!-- Tombol Aksi -->
         <div class="mt-auto">
-            <a href="{{ route('crew.show', $job->id) }}" class="btn btn-outline-secondary w-100 mb-2 fw-bold btn-action" style="border-style: dashed;">
+
+            <a href="{{ route('jobs.show', $job->id) }}" class="btn btn-outline-secondary w-100 mb-2 fw-bold btn-action" style="border-style: dashed;">
                 <i class="bi bi-info-circle me-1"></i> Detail
             </a>
 

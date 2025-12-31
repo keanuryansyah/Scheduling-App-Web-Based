@@ -231,8 +231,22 @@
 
             <!-- BAGIAN KIRI: Back Icon + Judul + Badges -->
             <div class="d-flex align-items-start gap-3 w-100">
+                @php
+                $roleId = auth()->user()->role_id;
+
+                if ($roleId == 1) {
+                $dashboard = route('boss.dashboard');
+                } elseif ($roleId == 2) {
+                $dashboard = route('admin.dashboard');
+                } elseif ($roleId == 3) {
+                $dashboard = route('crew.jobs');
+                } else {
+                $dashboard = route('editor.dashboard');
+                }
+                @endphp
+
                 <!-- Tombol Back Bulat -->
-                <a href="{{ auth()->user()->role->name == 'admin' ? route('admin.dashboard') : route('boss.dashboard') }}" class="btn btn-white border shadow-sm rounded-circle p-0 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px;">
+                <a href="{{ $dashboard }}" class="btn btn-white border shadow-sm rounded-circle p-0 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px;">
                     <i class="bi bi-arrow-left text-dark"></i>
                 </a>
 
@@ -288,8 +302,23 @@
             <!-- BAGIAN KANAN: Tombol Aksi (Full Width di HP) -->
             <div class="d-flex flex-wrap gap-2 w-100 w-md-auto justify-content-md-end">
 
+                @php
+                $roleId = auth()->user()->role_id;
+
+                if ($roleId == 1) {
+                $isPriv = true;
+                } elseif ($roleId == 2) {
+                $isPriv = true;
+                } elseif ($roleId == 3) {
+                $isPriv = false;
+                } else {
+                $isPriv = false;
+                }
+                @endphp
+
+
                 <!-- LOGIKA TOMBOL EDIT -->
-                @if($job->status == 'scheduled')
+                @if($job->status == 'scheduled' && $isPriv)
                 <a href="{{ route('jobs.edit', $job->id) }}" class="btn btn-warning shadow-sm fw-bold text-white flex-grow-1 flex-md-grow-0">
                     <i class="bi bi-pencil-square me-1"></i> Edit
                 </a>
@@ -305,7 +334,7 @@
 
                 </form>
 
-                @elseif($job->status == 'otw')
+                @elseif($job->status == 'otw' && $isPriv)
                 <form action="{{ route('jobs.cancel', $job->id) }}" method="POST" onsubmit="return confirm('Yakin ingin membatalkan job ini?');" class="flex-grow-1 flex-md-grow-0">
                     @csrf @method('POST')
                     <button
@@ -316,7 +345,7 @@
                     </button>
                 </form>
 
-                @elseif($job->status == 'arrived')
+                @elseif($job->status == 'arrived' && $isPriv)
                 <form action="{{ route('jobs.cancel', $job->id) }}" method="POST" onsubmit="return confirm('Yakin ingin membatalkan job ini?');" class="flex-grow-1 flex-md-grow-0">
                     @csrf @method('POST')
                     <button
@@ -351,15 +380,31 @@
 
 
                 <!-- Tombol Hapus -->
+                @if(in_array(auth()->user()->role_id, [1, 2]))
                 <form action="{{ route('jobs.destroy', $job->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus job ini?');" class="flex-grow-1 flex-md-grow-0">
                     @csrf @method('DELETE')
                     <button type="submit" class="btn btn-danger shadow-sm fw-bold w-100">
                         <i class="bi bi-trash"></i> Hapus
                     </button>
                 </form>
+                @endif
 
                 <!-- Tombol Kembali Teks (Hanya muncul di Desktop, di HP sudah ada panah diatas) -->
-                <a href="{{ auth()->user()->role->name == 'admin' ? route('admin.dashboard') : route('boss.dashboard') }}" class="btn btn-outline-secondary">
+                @php
+                $roleId = auth()->user()->role_id;
+
+                if ($roleId == 1) {
+                $dashboard = route('boss.dashboard');
+                } elseif ($roleId == 2) {
+                $dashboard = route('admin.dashboard');
+                } elseif ($roleId == 3) {
+                $dashboard = route('crew.jobs');
+                } else {
+                $dashboard = route('editor.dashboard');
+                }
+                @endphp
+
+                <a href="{{$dashboard}}" class="btn btn-outline-secondary">
                     Kembali
                 </a>
 
@@ -422,18 +467,40 @@
                                 <div class="icon-box icon-bg-danger"><i class="bi bi-whatsapp"></i></div>
                                 <div>
                                     <div class="label-text">Kontak</div>
-                                    <a href="https://wa.me/{{ $job->client_phone }}" target="_blank" class="text-decoration-none fw-bold text-dark">
-                                        {{ $job->client_phone }} <i class="bi bi-box-arrow-up-right small ms-1 text-muted"></i>
+                                    @php
+                                    $waNumber = preg_replace('/^0/', '62', $job->client_phone);
+                                    @endphp
+
+                                    <a href="https://wa.me/{{ $waNumber }}"
+                                        target="_blank"
+                                        class="text-decoration-none fw-bold text-dark">
+                                        {{ $job->client_phone }}
+                                        <i class="bi bi-box-arrow-up-right small ms-1 text-muted"></i>
                                     </a>
+
                                 </div>
                             </div>
                             <!-- Lokasi -->
                             <div class="col-12 mt-2">
                                 <div class="p-3 rounded-3 bg-light border border-light">
-                                    <div class="label-text mb-1 text-dark"><i class="bi bi-geo-alt-fill text-danger me-1"></i> Lokasi</div>
-                                    <p class="mb-0 small text-muted">{{ $job->location }}</p>
+                                    <div class="label-text mb-1 text-dark">
+                                        <i class="bi bi-geo-alt-fill text-danger me-1"></i> Lokasi
+                                    </div>
+
+                                    <p class="mb-2 small text-muted">
+                                        {{ $job->location }}
+                                    </p>
+
+                                    @if($job->location)
+                                    <a href="https://www.google.com/maps/search/?api=1&query={{ urlencode($job->location) }}"
+                                        target="_blank"
+                                        class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-map"></i> Buka di Google Maps
+                                    </a>
+                                    @endif
                                 </div>
                             </div>
+
                             <!-- Notes -->
                             <div class="col-12">
                                 <div class="p-3 rounded-3 bg-warning bg-opacity-10 border border-warning border-opacity-25">
@@ -652,6 +719,8 @@
             <!-- KOLOM KANAN -->
             <div class="col-lg-4">
 
+                @if(in_array(auth()->user()->role_id, [1, 2]))
+
                 <!-- CARD KEUANGAN -->
                 <div class="card card-modern card-gradient mb-4 border-0">
                     <div class="card-body p-4 text-center">
@@ -730,6 +799,7 @@
                     </div>
                 </div>
 
+
                 @if($job->status == 'done' && $job->editor_status == 'completed') <button type="button" class="btn btn-outline-primary fw-bold w-100 mb-2" onclick="handleInvoice({{ $job->id }}, {{ $job->amount ?? '0' }})"> <i class="bi bi-file-earmark-pdf me-1"></i> Generate Invoice </button>
                 <div class="modal fade" id="amountModal" tabindex="-1">
                     <div class="modal-dialog">
@@ -744,6 +814,9 @@
                         </form>
                     </div>
                 </div> @endif
+
+                @endif
+
 
                 <!-- CARD LINK -->
                 <div class="card card-modern">
@@ -763,7 +836,7 @@
 
                         @php
                         $isLocked = ($job->amount == 0.00);
-                        $isPrivileged = in_array(auth()->user()->role->name, ['admin', 'boss']);
+                        $isPrivileged = in_array(auth()->user()->role_id, [1, 2, 3, 4]);
                         @endphp
 
                         <p id="lockText" class="small text-muted text-center mb-3">
@@ -820,11 +893,13 @@
                                 $msg = "Halo Kak {$job->client_name}, ini link hasil dokumentasi acara {$job->job_title}:\n\n{$job->result_link}\n\nTerima kasih!";
                                 @endphp
 
+                                @if(in_array(auth()->user()->role_id, [1, 2]))
                                 <a href="https://wa.me/{{ $hp }}?text={{ urlencode($msg) }}"
                                     target="_blank"
                                     class="btn btn-success fw-bold">
                                     <i class="bi bi-whatsapp me-2"></i> Kirim WA
                                 </a>
+                                @endif
                             </div>
 
                             {{-- REVISI LINK --}}

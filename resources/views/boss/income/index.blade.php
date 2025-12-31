@@ -65,10 +65,25 @@
             border-radius: 6px;
         }
 
-        .badge-boss { background: #fee2e2; color: #991b1b; }
-        .badge-admin { background: #e0f2fe; color: #075985; }
-        .badge-editor { background: #fef3c7; color: #92400e; }
-        .badge-crew { background: #dcfce7; color: #166534; }
+        .badge-boss {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .badge-admin {
+            background: #e0f2fe;
+            color: #075985;
+        }
+
+        .badge-editor {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .badge-crew {
+            background: #dcfce7;
+            color: #166534;
+        }
 
         .input-group-custom {
             width: 240px;
@@ -78,99 +93,111 @@
 
 <body>
 
-<div class="container py-5">
+    <div class="container py-5">
 
-    <!-- HEADER -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h3 class="fw-bold mb-1">Kelola Income User</h3>
-            <p class="text-muted small mb-0">Atur saldo dan lihat performa tim.</p>
+        <!-- HEADER -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                @if(auth()->user()->role_id == 1)
+                <h3 class="fw-bold mb-1">Kelola Income User</h3>
+                <p class="text-muted small mb-0">Atur saldo dan lihat performa tim.</p>
+                @else
+                <h3 class="fw-bold mb-1">Lihat Detail Job User</h3>
+                <p class="text-muted small mb-0">lihat performa tim.</p>
+                @endif
+            </div>
+            <a href="{{ auth()->user()->role->name == 'admin' ? route('admin.dashboard') : route('boss.dashboard') }}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left"></i> Kembali Dashboard
+            </a>
         </div>
-        <a href="{{ route('boss.dashboard') }}" class="btn btn-outline-secondary btn-sm">
-            <i class="bi bi-arrow-left"></i> Kembali Dashboard
-        </a>
-    </div>
 
-    <!-- TABLE -->
-    <div class="card card-custom">
-        <div class="table-responsive">
-            <table class="table table-nowrap table-min-width align-middle mb-0">
-                <thead>
-                    <tr>
-                        <th>User & Role</th>
-                        <th>Update Saldo (Income)</th>
-                        <th>Statistik & Aksi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($users as $user)
-                    <tr>
-                        <!-- USER -->
-                        <td>
-                            <div class="user-info">
-                                <div class="avatar-circle">
-                                    {{ substr($user->name, 0, 1) }}
-                                </div>
-                                <div>
-                                    <div class="fw-semibold">{{ $user->name }}</div>
-                                    @php
+        <!-- TABLE -->
+        <div class="card card-custom">
+            <div class="table-responsive">
+                <table class="table table-nowrap table-min-width align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>User & Role</th>
+                            @if(auth()->user()->role_id == 1)
+                            <th>Update Saldo (Income)</th>
+                            @endif
+                            <th>Statistik & Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($users as $user)
+                        <tr>
+                            <!-- USER -->
+                            <td>
+                                <div class="user-info">
+                                    <div class="avatar-circle">
+                                        {{ substr($user->name, 0, 1) }}
+                                    </div>
+                                    <div>
+                                        <div class="fw-semibold">{{ $user->name }}</div>
+                                        @php
                                         $roleClass = match($user->role->name) {
-                                            'boss' => 'badge-boss',
-                                            'admin' => 'badge-admin',
-                                            'editor' => 'badge-editor',
-                                            'crew' => 'badge-crew',
-                                            default => 'bg-secondary text-white'
+                                        'boss' => 'badge-boss',
+                                        'admin' => 'badge-admin',
+                                        'editor' => 'badge-editor',
+                                        'crew' => 'badge-crew',
+                                        default => 'bg-secondary text-white'
                                         };
-                                    @endphp
-                                    <span class="badge badge-soft {{ $roleClass }}">
-                                        {{ ucfirst($user->role->name) }}
-                                    </span>
+                                        @endphp
+                                        <span class="badge badge-soft {{ $roleClass }}">
+                                            {{ ucfirst($user->role->name) }}
+                                        </span>
+                                    </div>
                                 </div>
-                            </div>
-                        </td>
+                            </td>
 
-                        <!-- INCOME -->
-                        <td>
-                            <form action="{{ route('boss.income.update') }}" method="POST">
-                                @csrf
-                                <input type="hidden" name="user_id" value="{{ $user->id }}">
-                                <div class="input-group input-group-sm input-group-custom">
-                                    <span class="input-group-text">Rp</span>
-                                    <input type="number" name="income" class="form-control fw-semibold"
-                                           value="{{ $user->income ?? 0 }}" min="0">
-                                    <button class="btn btn-primary">
-                                        <i class="bi bi-check-lg"></i>
-                                    </button>
-                                </div>
-                                <div class="form-text small">Klik centang untuk update manual</div>
-                            </form>
-                        </td>
+                            <!-- INCOME -->
+                            @if(auth()->user()->role_id == 1)
 
-                        <!-- ACTION -->
-                        <td>
-                            <div class="d-flex align-items-center gap-3">
-                                <a href="{{ route('boss.income.detail', $user->id) }}"
-                                   class="btn btn-sm btn-outline-primary">
-                                    <i class="bi bi-eye"></i> Detail Job
-                                </a>
+                            <td>
+                                <form action="{{ route('boss.income.update') }}" method="POST">
+                                    @csrf
+                                    <input type="hidden" name="user_id" value="{{ $user->id }}">
+                                    <div class="input-group input-group-sm input-group-custom">
+                                        <span class="input-group-text">Rp</span>
+                                        <input type="number" name="income" class="form-control fw-semibold"
+                                            value="{{ $user->income ?? 0 }}" min="0">
+                                        <button class="btn btn-primary">
+                                            <i class="bi bi-check-lg"></i>
+                                        </button>
+                                    </div>
+                                    <div class="form-text small">Klik centang untuk update manual</div>
+                                </form>
+                            </td>
 
-                                @if($user->jobCount > 0)
+                            @endif
+
+                            <!-- ACTION -->
+                            <td>
+                                <div class="d-flex align-items-center gap-3">
+                                    <a href="{{ route('boss.income.detail', $user->id) }}"
+                                        class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-eye"></i> Detail Job
+                                    </a>
+
+                                    @if($user->jobCount > 0)
                                     <span class="text-muted small fw-semibold">
                                         {{ $user->jobCount }} Job
                                     </span>
-                                @else
+                                    @else
                                     <span class="text-muted small fst-italic">Belum ada job</span>
-                                @endif
-                            </div>
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
+                                    @endif
+                                </div>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
         </div>
+
     </div>
 
-</div>
-
 </body>
+
 </html>

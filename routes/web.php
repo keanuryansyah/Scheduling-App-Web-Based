@@ -34,14 +34,13 @@ Route::middleware(['auth', 'role:boss,admin'])->group(function () {
     // CRUD Job
     Route::get('/jobs/create', [JobController::class, 'create'])->name('jobs.create');
     Route::post('/jobs', [JobController::class, 'store'])->name('jobs.store');
-    Route::get('/jobs/{job}', [JobController::class, 'show'])->name('jobs.show');
+    // Route::get('/jobs/{job}', [JobController::class, 'show'])->name('jobs.show');
     Route::get('/jobs/{job}/edit', [JobController::class, 'edit'])->name('jobs.edit');
     Route::put('/jobs/{job}', [JobController::class, 'update'])->name('jobs.update');
     Route::delete('/jobs/{job}', [JobController::class, 'destroy'])->name('jobs.destroy');
 
     // Fitur Tambahan Job
     Route::post('/jobs/{job}/cancel', [JobController::class, 'cancel'])->name('jobs.cancel');
-    Route::put('/jobs/{job}/update-link', [JobController::class, 'updateLink'])->name('jobs.updateLink');
     Route::post('/jobs/{job}/update-proof', [JobController::class, 'updateProof'])->name('jobs.updateProof');
 
     // API Helper
@@ -57,12 +56,14 @@ Route::middleware(['auth', 'role:boss,admin'])->group(function () {
     Route::get('/jobs/{job}/mark-wa-sent', [JobController::class, 'markWaSent'])->name('jobs.markWaSent');
 
     Route::get('/jobs/{job}/invoice', [JobController::class, 'invoice'])
-    ->name('jobs.invoice');
+        ->name('jobs.invoice');
 
     Route::post('/jobs/invoice/preview', [JobController::class, 'invoicePreview'])
-    ->name('jobs.invoice.preview');
+        ->name('jobs.invoice.preview');
 
+    Route::get('/boss/income', [IncomeController::class, 'index'])->name('boss.income.index');
 
+    Route::get('/boss/income/{user}', [IncomeController::class, 'detail'])->name('boss.income.detail');
 });
 
 
@@ -76,12 +77,17 @@ Route::middleware(['auth', 'role:boss'])->group(function () {
     Route::resource('users', UserController::class);
 
     // Laporan Income
-    Route::get('/boss/income', [IncomeController::class, 'index'])->name('boss.income.index');
     Route::post('/boss/income', [IncomeController::class, 'update'])->name('boss.income.update');
-    Route::get('/boss/income/{user}', [IncomeController::class, 'detail'])->name('boss.income.detail');
     Route::post('/boss/income/store-single', [IncomeController::class, 'storeSingleIncome'])->name('boss.income.storeSingle');
+    Route::post('/boss/income/reset-income', [IncomeController::class, 'resetIncome'])->name('boss.income.resetIncome');
     Route::post('/boss/income/cairkan', [IncomeController::class, 'cairkanGaji'])->name('boss.income.cairkan');
 });
+
+Route::middleware(['auth', 'role:boss,admin,crew,editor'])->group(function () {
+    Route::get('/jobs/{job}', [JobController::class, 'show'])->name('jobs.show');
+    Route::put('/jobs/{job}/update-link', [JobController::class, 'updateLink'])->name('jobs.updateLink');
+});
+
 
 
 // =============================================================

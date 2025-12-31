@@ -410,6 +410,7 @@
 
 
                                             @if($lastDate !== $job->job_date->toDateString())
+
                                             <tr class="table-secondary">
                                                 <td colspan="7" class="fw-bold text-dark ps-4 py-2">
                                                     @if($job->job_date->isToday())
@@ -419,6 +420,7 @@
                                                     @endif
                                                 </td>
                                             </tr>
+
 
                                             @php $lastDate = $job->job_date->toDateString(); @endphp
                                             @endif
@@ -673,6 +675,26 @@
             }
         });
     </script>
+    <script>
+        document.addEventListener('click', function(e) {
+
+            // Cegah kalau klik tombol, link, input, dropdown, modal trigger
+            if (
+                e.target.closest('a') ||
+                e.target.closest('button') ||
+                e.target.closest('.btn') ||
+                e.target.closest('[data-bs-toggle]')
+            ) {
+                return;
+            }
+
+            const row = e.target.closest('.job-row');
+            if (row) {
+                window.location.href = row.dataset.href;
+            }
+        });
+    </script>
+
 </body>
 
 </html>

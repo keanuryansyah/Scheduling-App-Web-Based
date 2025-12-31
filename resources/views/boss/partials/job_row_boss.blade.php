@@ -1,9 +1,11 @@
-<tr>
+<tr class="job-row" data-href="{{ route('jobs.show', $job->id) }}"
+    style="cursor: pointer;">
     <!-- TANGGAL -->
     <!-- <td class="ps-4">
         <div class="fw-bold text-dark">{{ $job->job_date->translatedFormat('d M Y') }}</div>
         <div class="small text-muted">{{ $job->job_date->translatedFormat('l') }}</div>
     </td> -->
+
     <td class="ps-4">
         <span class="text-muted small">—</span>
     </td>

@@ -28,16 +28,14 @@ class EditorController extends Controller
             ->orderBy('start_time', 'asc')
             ->get();
 
+
         // 2. JOB SELESAI (Completed - Hanya milik saya)
         $completedJobs = Job::with(['type', 'assignments'])
             ->where('editor_status', 'completed')
-            ->whereHas('assignments', function ($q) use ($editorId) {
-                // Pastikan yang muncul cuma job yang diedit oleh user ini
-                $q->where('editor_id', $editorId);
-            })
             ->orderBy('job_date', 'desc')
-            ->limit(10) // Batasi biar ga kepanjangan
+            ->orderBy('start_time', 'asc')
             ->get();
+
 
         return view('editor.index', compact('activeJobs', 'completedJobs'));
     }

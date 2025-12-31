@@ -137,6 +137,7 @@
                 <div class="d-flex flex-column flex-lg-row gap-3 ms-auto align-items-lg-center">
                     <a href="{{ route('admin.dashboard') }}" class="text-decoration-none fw-bold text-dark">Dashboard</a>
                     <a href="{{ route('job-types.index') }}" class="text-decoration-none text-secondary">Job Types</a>
+                    <a href="{{ route('boss.income.index') }}" class="text-decoration-none text-secondary">Income Crews</a>
                     <div class="vr d-none d-lg-block mx-2"></div>
                     <form action="{{ route('logout') }}" method="POST">
                         @csrf
@@ -656,6 +657,26 @@
             }
         });
     </script>
+    <script>
+        document.addEventListener('click', function(e) {
+
+            // Cegah kalau klik tombol, link, input, dropdown, modal trigger
+            if (
+                e.target.closest('a') ||
+                e.target.closest('button') ||
+                e.target.closest('.btn') ||
+                e.target.closest('[data-bs-toggle]')
+            ) {
+                return;
+            }
+
+            const row = e.target.closest('.job-row');
+            if (row) {
+                window.location.href = row.dataset.href;
+            }
+        });
+    </script>
+
 </body>
 
 </html>

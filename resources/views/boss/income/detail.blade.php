@@ -128,7 +128,11 @@
                 <a href="{{ route('boss.income.index') }}" class="btn btn-white border shadow-sm rounded-circle p-2" style="width: 40px; height: 40px; display:flex; align-items:center; justify-content:center;">
                     <i class="bi bi-arrow-left text-dark"></i>
                 </a>
+                @if(auth()->user()->role_id == 1)
                 <h4 class="fw-bold mb-0 text-dark">Input Gaji Manual</h4>
+                @else
+                <h4 class="fw-bold mb-0 text-dark">Lihat Daftar Job User</h4>
+                @endif
             </div>
         </div>
 
@@ -154,7 +158,19 @@
                         <div class="ms-auto text-end profile-money">
                             <!-- INI TOTAL DOMPET ASLI (GLOBAL) -->
                             <small class="opacity-75 text-uppercase fw-bold ls-1" style="font-size: 0.7rem;">Total Dompet Saat Ini</small>
+
+                            @if(auth()->user()->role_id == 1)
                             <h2 class="mb-0 fw-bold">Rp {{ number_format($user->income, 0, ',', '.') }}</h2>
+                            @if($user->income != '0.00')
+                            <form action="{{ route('boss.income.resetIncome') }}" method="POST">
+                                @csrf
+                                <input type="hidden" name="user_id" value="{{ $user->id }}">
+                                <button class="btn badge bg-danger">Reset</button>
+                            </form>
+                            @endif
+                            @else
+                            <h2 class="mb-0 fw-bold">****</h2>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -241,7 +257,9 @@
 
                             <th width="10%">Hasil</th>
                             <th width="10%">Harga</th>
+                            @if(auth()->user()->role_id == 1)
                             <th width="15%" class="text-end">Input Gaji (Rp)</th>
+                            @endif
                         </tr>
                     </thead>
                     <tbody>
@@ -332,6 +350,8 @@
                             </td>
 
                             <!-- 8. INPUT GAJI -->
+                            @if(auth()->user()->role_id == 1)
+
                             <td class="text-end">
                                 @php
                                 $trx = $job->transactions->where('user_id', $user->id)->first();
@@ -369,6 +389,7 @@
                                     @endif
                                 </div>
                             </td>
+                            @endif
 
                         </tr>
 

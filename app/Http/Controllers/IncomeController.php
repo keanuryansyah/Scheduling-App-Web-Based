@@ -49,13 +49,13 @@ class IncomeController extends Controller
         $filterJobType = $request->job_type;
 
         // --- 1. QUERY LIST JOB ---
-        $query = Job::where(function($q) use ($userId) {
-            $q->whereHas('assignments', function($subQ) use ($userId) {
+        $query = Job::where(function ($q) use ($userId) {
+            $q->whereHas('assignments', function ($subQ) use ($userId) {
                 $subQ->where('user_id', $userId);
             })
-            ->orWhereHas('assignments', function($subQ) use ($userId) {
-                $subQ->where('editor_id', $userId);
-            });
+                ->orWhereHas('assignments', function ($subQ) use ($userId) {
+                    $subQ->where('editor_id', $userId);
+                });
         });
 
         // Filter Logic untuk Job
@@ -71,19 +71,19 @@ class IncomeController extends Controller
         }
 
         $jobs = $query->with(['type', 'assignments.editor', 'transactions' => function ($q) use ($userId) {
-                $q->where('user_id', $userId);
-            }])
-            ->orderBy('job_date', 'asc')
+            $q->where('user_id', $userId);
+        }])
+            ->orderBy('job_date', 'desc')
             ->orderBy('start_time', 'asc')
             ->get();
 
-        
+
         // --- 2. QUERY TOTAL SALDO (SESUAI FILTER) ---
         // Kita hitung jumlah transaksi 'income' tapi hanya untuk Job yang lolos filter di atas
-        
+
         $totalRealIncome = \App\Models\Transaction::where('user_id', $userId)
             ->whereIn('type', ['income', 'expense']) // Ambil income (plus) dan expense (minus)
-            ->whereHas('job', function($q) use ($filterJobType, $startDate, $endDate, $filterMonth, $filterYear) {
+            ->whereHas('job', function ($q) use ($filterJobType, $startDate, $endDate, $filterMonth, $filterYear) {
                 // Terapkan Filter yang SAMA PERSIS dengan Query Job di atas
                 if ($filterJobType) {
                     $q->where('job_type', $filterJobType);
@@ -97,7 +97,7 @@ class IncomeController extends Controller
                 }
             })
             ->sum('amount');
-        
+
         // Ambil data untuk dropdown
         $allJobTypes = \App\Models\JobType::all();
 
@@ -138,6 +138,19 @@ class IncomeController extends Controller
 
         return back()->with('success', 'Gaji berhasil diupdate!');
     }
+
+    public function resetIncome(Request $request)
+    {
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+        ]);
+
+        User::where('id', $request->user_id)
+            ->update(['income' => 0]);
+
+        return back()->with('success', 'Income berhasil di-reset.');
+    }
+
 
     private function recalculateUserBalance($userId)
     {

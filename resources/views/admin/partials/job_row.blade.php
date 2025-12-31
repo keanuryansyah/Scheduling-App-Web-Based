@@ -1,4 +1,5 @@
-<tr>
+<tr class="job-row"  data-href="{{ route('jobs.show', $job->id) }}"
+    style="cursor: pointer;">
     <!-- TANGGAL -->
     <td class="ps-4">
         <span class="text-muted small">—</span>

@@ -120,85 +120,93 @@
         </div>
 
         <div class="row g-4 mb-5">
-            @forelse($activeJobs as $job)
-            @php
-            $assignment = $job->assignments->first();
-            $editorId = $assignment ? $assignment->editor_id : null;
-            $currentUserId = Auth::id();
-            $isLocked = ($job->editor_status == 'editing' && $editorId && $editorId != $currentUserId);
-
-            $editorName = 'Editor Lain';
-            if ($isLocked && $assignment) {
-            $editorData = \App\Models\User::find($editorId);
-            $editorName = $editorData ? $editorData->name : 'Editor Lain';
-            }
-            @endphp
-
-            <div class="col-md-6 col-lg-4">
-                <div class="card card-job {{ $isLocked ? 'bg-light' : '' }}">
-                    @if($isLocked) <div class="status-line status-locked"></div>
-                    @elseif($job->editor_status == 'editing') <div class="status-line status-editing"></div>
-                    @else <div class="status-line status-idle"></div>
-                    @endif
-
-                    <div class="card-body p-4">
-                        <div class="d-flex justify-content-between align-items-start mb-3">
-                            <div>
-                                <span class="badge {{ $isLocked ? 'bg-secondary' : 'bg-primary' }} bg-opacity-10 text-{{ $isLocked ? 'secondary' : 'primary' }} mb-2">
-                                    {{ $job->type->job_type_name }}
-                                </span>
-                                <h5 class="fw-bold mb-0 {{ $isLocked ? 'text-muted' : 'text-dark' }}">{{ $job->job_title }}</h5>
-                            </div>
-                            @if($isLocked) <i class="bi bi-lock-fill text-muted fs-4"></i>
-                            @elseif($job->editor_status == 'editing') <div class="spinner-grow text-warning spinner-grow-sm"></div>
-                            @endif
-                        </div>
-
-                        <p class="text-muted small mb-4">
-                            <i class="bi bi-calendar-event me-1"></i> {{ $job->job_date->translatedFormat('d M Y') }}
-                        </p>
-
-                        <div class="mt-auto">
-                            @if($isLocked)
-                            <div class="alert alert-secondary py-2 px-3 small mb-0 rounded-3 d-flex align-items-center">
-                                <div class="avatar-locked">{{ substr($editorName, 0, 1) }}</div>
-                                <div><span class="d-block text-xs text-muted">Sedang diedit oleh:</span><strong class="text-dark">{{ $editorName }}</strong></div>
-                            </div>
-                            @elseif($job->editor_status == 'editing')
-                            <form action="{{ route('editor.finish', $job->id) }}"
-                                method="POST"
-                                class="finish-form"
-                                data-job="{{ $job->id }}">
-
-                                @csrf
-                                <div class="mb-3">
-                                    <input type="url" name="result_link" class="form-control form-control-sm bg-light" placeholder="Link GDrive..." required>
-                                </div>
-                                <div class="d-flex gap-2">
-                                    <a href="{{ route('editor.show', $job->id) }}" class="btn btn-outline-secondary btn-sm flex-grow-1 fw-bold">Detail</a>
-                                    <button type="button" class="btn btn-success btn-sm flex-grow-1 fw-bold btn-finish">
-                                        <i class="bi bi-check-lg"></i> Selesai
-                                    </button>
-                                </div>
-                                <input type="hidden" name="pc_number" class="pc-input">
-                            </form>
-                            @else
-                            <form action="{{ route('editor.start', $job->id) }}" method="POST">
-                                @csrf
-                                <div class="d-flex gap-2">
-                                    <a href="{{ route('editor.show', $job->id) }}" class="btn btn-outline-primary w-100 btn-sm fw-bold">Detail</a>
-                                    <button class="btn btn-primary w-100 btn-sm fw-bold shadow-sm"><i class="bi bi-play-fill"></i> Mulai</button>
-                                </div>
-                            </form>
-                            @endif
-                        </div>
+            @forelse($activeJobs->groupBy(fn($job) => $job->job_date->toDateString()) as $date => $jobs)
+                <!-- Header tanggal hanya sekali -->
+                <div class="col-12">
+                    <div class="fw-bold text-dark mb-3">
+                        @if(\Carbon\Carbon::parse($date)->isToday())
+                            <span class="badge bg-danger me-2">Hari Ini</span>
+                        @endif
+                        {{ \Carbon\Carbon::parse($date)->translatedFormat('l, d M Y') }}
                     </div>
                 </div>
-            </div>
+
+                @foreach($jobs as $job)
+                    @php
+                        $assignment = $job->assignments->first();
+                        $editorId = $assignment ? $assignment->editor_id : null;
+                        $currentUserId = Auth::id();
+                        $isLocked = ($job->editor_status == 'editing' && $editorId && $editorId != $currentUserId);
+
+                        $editorName = 'Editor Lain';
+                        if ($isLocked && $assignment) {
+                            $editorData = \App\Models\User::find($editorId);
+                            $editorName = $editorData ? $editorData->name : 'Editor Lain';
+                        }
+                    @endphp
+
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card card-job {{ $isLocked ? 'bg-light' : '' }}">
+                            @if($isLocked) <div class="status-line status-locked"></div>
+                            @elseif($job->editor_status == 'editing') <div class="status-line status-editing"></div>
+                            @else <div class="status-line status-idle"></div>
+                            @endif
+
+                            <div class="card-body p-4">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <div>
+                                        <span class="badge {{ $isLocked ? 'bg-secondary' : 'bg-primary' }} bg-opacity-10 text-{{ $isLocked ? 'secondary' : 'primary' }} mb-2">
+                                            {{ $job->type->job_type_name }}
+                                        </span>
+                                        <h5 class="fw-bold mb-0 {{ $isLocked ? 'text-muted' : 'text-dark' }}">{{ $job->job_title }}</h5>
+                                    </div>
+                                    @if($isLocked) <i class="bi bi-lock-fill text-muted fs-4"></i>
+                                    @elseif($job->editor_status == 'editing') <div class="spinner-grow text-warning spinner-grow-sm"></div>
+                                    @endif
+                                </div>
+
+                                <p class="text-muted small mb-4">
+                                    <i class="bi bi-calendar-event me-1"></i> {{ $job->job_date->translatedFormat('d M Y') }}
+                                </p>
+
+                                <div class="mt-auto">
+                                    @if($isLocked)
+                                    <div class="alert alert-secondary py-2 px-3 small mb-0 rounded-3 d-flex align-items-center">
+                                        <div class="avatar-locked">{{ substr($editorName, 0, 1) }}</div>
+                                        <div><span class="d-block text-xs text-muted">Sedang diedit oleh:</span><strong class="text-dark">{{ $editorName }}</strong></div>
+                                    </div>
+                                    @elseif($job->editor_status == 'editing')
+                                    <form action="{{ route('editor.finish', $job->id) }}" method="POST" class="finish-form" data-job="{{ $job->id }}">
+                                        @csrf
+                                        <div class="mb-3">
+                                            <input type="url" name="result_link" class="form-control form-control-sm bg-light" placeholder="Link GDrive..." required>
+                                        </div>
+                                        <div class="d-flex gap-2">
+                                            <a href="{{ route('editor.show', $job->id) }}" class="btn btn-outline-secondary btn-sm flex-grow-1 fw-bold">Detail</a>
+                                            <button type="button" class="btn btn-success btn-sm flex-grow-1 fw-bold btn-finish">
+                                                <i class="bi bi-check-lg"></i> Selesai
+                                            </button>
+                                        </div>
+                                        <input type="hidden" name="pc_number" class="pc-input">
+                                    </form>
+                                    @else
+                                    <form action="{{ route('editor.start', $job->id) }}" method="POST">
+                                        @csrf
+                                        <div class="d-flex gap-2">
+                                            <a href="{{ route('jobs.show', $job->id) }}" class="btn btn-outline-primary w-100 btn-sm fw-bold">Detail</a>
+                                            <button class="btn btn-primary w-100 btn-sm fw-bold shadow-sm"><i class="bi bi-play-fill"></i> Mulai</button>
+                                        </div>
+                                    </form>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
             @empty
-            <div class="col-12 text-center py-4 border rounded-3 bg-white">
-                <p class="text-muted mb-0 small">Belum ada job baru yang masuk.</p>
-            </div>
+                <div class="col-12 text-center py-4 border rounded-3 bg-white">
+                    <p class="text-muted mb-0 small">Belum ada job baru yang masuk.</p>
+                </div>
             @endforelse
         </div>
 
@@ -206,30 +214,41 @@
         @if($completedJobs->isNotEmpty())
         <div class="d-flex justify-content-between align-items-center mb-4 pt-4 border-top">
             <h5 class="fw-bold text-success mb-0"><i class="bi bi-check-circle-fill me-2"></i> Riwayat Selesai</h5>
-            <span class="badge bg-success rounded-pill">10 Terakhir</span>
         </div>
 
         <div class="row g-4">
-            @foreach($completedJobs as $job)
-            <div class="col-md-6 col-lg-4">
-                <div class="card card-job border border-success border-opacity-25">
-                    <div class="status-line status-completed"></div>
-                    <div class="card-body p-4 opacity-75">
-                        <div class="d-flex justify-content-between align-items-start mb-2">
-                            <h6 class="fw-bold text-dark mb-0">{{ $job->job_title }}</h6>
-                            <span class="badge bg-success"><i class="bi bi-check-lg"></i> Selesai</span>
-                        </div>
-                        <p class="text-muted small mb-3">
-                            {{ $job->job_date->translatedFormat('d M Y') }}
-                        </p>
-                        <div class="d-grid">
-                            <a href="{{ route('editor.show', $job->id) }}" class="btn btn-outline-success btn-sm fw-bold">
-                                Lihat Hasil
-                            </a>
-                        </div>
+            @foreach($completedJobs->groupBy(fn($job) => $job->job_date->toDateString()) as $date => $jobs)
+                <!-- Header tanggal hanya sekali -->
+                <div class="col-12">
+                    <div class="fw-bold text-success mb-3">
+                        @if(\Carbon\Carbon::parse($date)->isToday())
+                            <span class="badge bg-success me-2">Hari Ini</span>
+                        @endif
+                        {{ \Carbon\Carbon::parse($date)->translatedFormat('l, d M Y') }}
                     </div>
                 </div>
-            </div>
+
+                @foreach($jobs as $job)
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card card-job border border-success border-opacity-25">
+                            <div class="status-line status-completed"></div>
+                            <div class="card-body p-4 opacity-75">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h6 class="fw-bold text-dark mb-0">{{ $job->job_title }}</h6>
+                                    <span class="badge bg-success"><i class="bi bi-check-lg"></i> Selesai</span>
+                                </div>
+                                <p class="text-muted small mb-3">
+                                    {{ $job->job_date->translatedFormat('d M Y') }}
+                                </p>
+                                <div class="d-grid">
+                                    <a href="{{ route('jobs.show', $job->id) }}" class="btn btn-outline-success btn-sm fw-bold">
+                                        Lihat Hasil
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
             @endforeach
         </div>
         @endif
@@ -248,12 +267,7 @@
                 <div class="modal-body">
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Dikerjakan di PC ke berapa?</label>
-                        <input type="number"
-                            min="1"
-                            class="form-control"
-                            id="pcNumberInput"
-                            placeholder="Contoh: 3"
-                            required>
+                        <input type="number" min="1" class="form-control" id="pcNumberInput" placeholder="Contoh: 3" required>
                     </div>
 
                     <div class="alert alert-light small text-muted rounded-3">
@@ -262,9 +276,7 @@
                 </div>
 
                 <div class="modal-footer border-0">
-                    <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">
-                        Batal
-                    </button>
+                    <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">Batal</button>
                     <button type="button" class="btn btn-success rounded-pill fw-bold" id="confirmFinish">
                         <i class="bi bi-check-lg"></i> Konfirmasi
                     </button>
@@ -273,18 +285,15 @@
         </div>
     </div>
 
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-
             let currentForm = null;
             const pcModal = new bootstrap.Modal(document.getElementById('pcModal'));
 
             document.querySelectorAll('.btn-finish').forEach(button => {
                 button.addEventListener('click', function() {
-
                     const form = this.closest('form');
                     const linkInput = form.querySelector('input[name="result_link"]');
 
@@ -301,7 +310,6 @@
             });
 
             document.getElementById('confirmFinish').addEventListener('click', function() {
-
                 const pcInput = document.getElementById('pcNumberInput');
 
                 if (!pcInput.value) {
@@ -312,14 +320,10 @@
 
                 const hiddenInput = currentForm.querySelector('input[name="pc_number"]');
                 hiddenInput.value = pcInput.value;
-
                 currentForm.submit();
             });
-
         });
     </script>
-
-
 
 </body>
 
