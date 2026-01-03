@@ -1,4 +1,4 @@
-<tr class="job-row"  data-href="{{ route('jobs.show', $job->id) }}"
+<tr class="job-row" data-href="{{ route('jobs.show', $job->id) }}"
     style="cursor: pointer;">
     <!-- TANGGAL -->
     <td class="ps-4">
@@ -84,7 +84,7 @@
     <td class="text-end pe-4">
         <div class="btn-group">
 
-         {{-- KHUSUS JOB DIBATALKAN --}}
+            {{-- KHUSUS JOB DIBATALKAN --}}
             @if($job->status == 'canceled')
             <a href="{{ route('jobs.sendWa', [
             'job' => $job->id,
@@ -213,6 +213,16 @@
             @endif
 
             <a href="{{ route('jobs.show', $job->id) }}" class="btn btn-outline-primary btn-sm ms-1"><i class="bi bi-eye"></i></a>
+
+            @if($job->status == 'scheduled')
+            <button
+                type="button"
+                class="btn btn-outline-secondary btn-sm ms-1 btn-duplicate"
+                data-job-id="{{ $job->id }}"
+                title="Duplicate Job">
+                <i class="bi bi-files"></i>
+            </button>
+            @endif
         </div>
     </td>
 </tr>

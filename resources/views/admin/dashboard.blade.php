@@ -135,9 +135,9 @@
 
             <div class="collapse navbar-collapse mt-2 mt-lg-0" id="navbarContent">
                 <div class="d-flex flex-column flex-lg-row gap-3 ms-auto align-items-lg-center">
-                    <a href="{{ route('admin.dashboard') }}" class="text-decoration-none fw-bold text-dark">Dashboard</a>
-                    <a href="{{ route('job-types.index') }}" class="text-decoration-none text-secondary">Job Types</a>
-                    <a href="{{ route('boss.income.index') }}" class="text-decoration-none text-secondary">Income Crews</a>
+                    <a href="{{ route('admin.dashboard') }}" class="text-decoration-none fw-bold text-dark">Dasbor</a>
+                    <a href="{{ route('job-types.index') }}" class="text-decoration-none text-secondary">Tipe Pekerjaan</a>
+                    <a href="{{ route('boss.income.index') }}" class="text-decoration-none text-secondary">Catatan Pekerjaan Tim</a>
                     <div class="vr d-none d-lg-block mx-2"></div>
                     <form action="{{ route('logout') }}" method="POST">
                         @csrf
@@ -654,6 +654,40 @@
             if (savedTab) {
                 const tabTrigger = new bootstrap.Tab(document.querySelector('#' + savedTab));
                 tabTrigger.show();
+            }
+        });
+
+        document.addEventListener('click', async function(e) {
+            const btn = e.target.closest('.btn-duplicate');
+            if (!btn) return;
+
+            e.stopPropagation(); // biar ga ke-trigger row click
+            const jobId = btn.dataset.jobId;
+            const row = btn.closest('tr');
+
+            btn.disabled = true;
+
+            try {
+                const res = await fetch(`/jobs/${jobId}/duplicate`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json',
+                    }
+                });
+
+                const data = await res.json();
+                console.log(data)
+                if (data.success) {
+                    // sisipkan tepat di bawah job asli
+                    row.insertAdjacentHTML('afterend', data.html);
+                } else {
+                    alert('Gagal duplicate job');
+                }
+            } catch (err) {
+                alert('Terjadi kesalahan');
+            } finally {
+                btn.disabled = false;
             }
         });
     </script>

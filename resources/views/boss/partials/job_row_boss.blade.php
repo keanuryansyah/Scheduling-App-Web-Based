@@ -26,7 +26,7 @@
         <!-- INFO CREATOR KECIL -->
         <div style="font-size: 10px;" class="fst-italic text-secondary bg-light px-2 py-1 rounded d-inline-block border">
             Added By:
-            @if($job->creator->role->name == 'boss')
+            @if($job->creator->role->id == 1)
             <strong class="text-danger">BOSS</strong>
             @else
             <strong class="text-primary">{{ $job->creator->name }}</strong>
@@ -163,7 +163,7 @@
                                         <span><strong class="d-block" style="font-size: 11px;">Batal ke:</strong> {{ $oldCrew->name }}</span>
                                     </a>
                                     @endforeach
-                                    @elseif($hasCache)
+                                    @elseif($hasCache ?? false)
                                     @php $oldData = Illuminate\Support\Facades\Cache::get('old_crew_' . $job->id); @endphp
                                     <a href="{{ route('jobs.sendWa', ['job' => $job->id, 'type' => 'cancel_person', 'no_update' => 1, 'target_phone' => $oldData['phone'], 'target_name' => $oldData['name']]) }}"
                                         target="_blank" class="btn btn-outline-danger text-start btn-sm p-2">
@@ -211,6 +211,16 @@
             @endif
 
             <a href="{{ route('jobs.show', $job->id) }}" class="btn btn-outline-primary btn-sm ms-1"><i class="bi bi-eye"></i></a>
+            @if($job->status == 'scheduled')
+            <button
+                type="button"
+                class="btn btn-outline-secondary btn-sm ms-1 btn-duplicate"
+                data-job-id="{{ $job->id }}"
+                title="Duplicate Job">
+                <i class="bi bi-files"></i>
+            </button>
+            @endif
+
         </div>
     </td>
 </tr>

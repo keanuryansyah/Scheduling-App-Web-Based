@@ -64,6 +64,9 @@ Route::middleware(['auth', 'role:boss,admin'])->group(function () {
     Route::get('/boss/income', [IncomeController::class, 'index'])->name('boss.income.index');
 
     Route::get('/boss/income/{user}', [IncomeController::class, 'detail'])->name('boss.income.detail');
+
+    Route::post('/jobs/{job}/duplicate', [JobController::class, 'duplicate'])
+        ->name('jobs.duplicate');
 });
 
 

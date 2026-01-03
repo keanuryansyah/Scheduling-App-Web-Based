@@ -1,5 +1,17 @@
+@php
+$dateCarbon = \Carbon\Carbon::parse($date);
+
+if ($dateCarbon->isYesterday() && $job->status == 'scheduled') {
+    $detectDay = 'is-yesterday';
+} elseif (!$dateCarbon->isToday() && $job->status == 'scheduled') {
+    $detectDay = 'not-today';
+} else {
+    $detectDay = '';
+}
+@endphp
+
 <div class="col-md-6 col-lg-4">
-    <div class="card job-card p-3 h-100">
+    <div class="card job-card p-3 h-100 {{$detectDay}}">
 
         <!-- Status Badge -->
         <div class="status-badge">
@@ -140,20 +152,3 @@
     </div>
 </div>
 @endif
-
-<!-- Tambahkan script toggle ini juga di partials atau footer -->
-<!-- <script>
-    function toggleProof(id) {
-        let method = document.getElementById('payMethod' + id).value;
-        let divProof = document.getElementById('proofDiv' + id);
-        let divAmount = document.getElementById('amountDiv' + id); // Ambil elemen amount
-        
-        if (method === 'cash') {
-            if(divProof) divProof.classList.remove('d-none');
-            if(divAmount) divAmount.classList.remove('d-none'); // Munculkan input harga
-        } else {
-            if(divProof) divProof.classList.add('d-none');
-            if(divAmount) divAmount.classList.add('d-none');
-        }
-    }
-</script> -->

@@ -431,4 +431,45 @@ class JobController extends Controller
 
         return redirect()->route('jobs.invoice', $request->job_id,);
     }
+
+    public function duplicate(Job $job)
+    {
+        DB::beginTransaction();
+        try {
+            // clone job
+            $newJob = $job->replicate();
+            $newJob->status = 'scheduled';
+            $newJob->payment_method = 'unpaid';
+            $newJob->amount = 0;
+            $newJob->editor_status = 'idle';
+            $newJob->wa_sent_at = null;
+            $newJob->created_at = now();
+            $newJob->updated_at = now();
+            $newJob->save();
+
+            // clone assignments (crew & editor)
+            foreach ($job->assignments as $assign) {
+                $newJob->assignments()->create([
+                    'user_id'   => $assign->user_id,
+                    'editor_id' => $assign->editor_id,
+                    'task'      => $assign->task,
+                ]);
+            }
+
+            DB::commit();
+
+            // render 1 row job (reuse blade yang sama)
+            $html = view(auth()->id() == 1 ? 'boss.partials.job_row_boss' : 'admin.partials.job_row', [
+                'job' => $newJob->fresh(['users', 'assignments', 'type', 'creator.role'])
+            ])->render();
+
+            return response()->json([
+                'success' => true,
+                'html' => $html,
+            ]);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            return response()->json(['success' => false], 500);
+        }
+    }
 }

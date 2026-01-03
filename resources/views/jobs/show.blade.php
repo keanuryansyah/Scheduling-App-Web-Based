@@ -491,13 +491,31 @@
                                         {{ $job->location }}
                                     </p>
 
-                                    @if($job->location)
-                                    <a href="https://www.google.com/maps/search/?api=1&query={{ urlencode($job->location) }}"
+                                    @php
+                                    $location = trim($job->location);
+
+                                    $isMapLink = \Illuminate\Support\Str::startsWith($location, [
+                                    'https://maps.google.com',
+                                    'https://www.google.com/maps',
+                                    'http://maps.google.com',
+                                    'http://www.google.com/maps',
+                                    'https://maps.app.goo.gl'
+                                    ]);
+
+                                    $mapUrl = $isMapLink
+                                    ? $location
+                                    : 'https://www.google.com/maps/search/?api=1&query=' . urlencode($location);
+                                    @endphp
+
+                                    @if($location)
+                                    <a href="{{ $mapUrl }}"
                                         target="_blank"
                                         class="btn btn-sm btn-outline-danger">
                                         <i class="bi bi-map"></i> Buka di Google Maps
                                     </a>
                                     @endif
+
+
                                 </div>
                             </div>
 
@@ -800,7 +818,7 @@
                 </div>
 
 
-                @if($job->status == 'done' && $job->editor_status == 'completed') <button type="button" class="btn btn-outline-primary fw-bold w-100 mb-2" onclick="handleInvoice({{ $job->id }}, {{ $job->amount ?? '0' }})"> <i class="bi bi-file-earmark-pdf me-1"></i> Generate Invoice </button>
+                <button type="button" class="btn btn-outline-primary fw-bold w-100 mb-2" onclick="handleInvoice({{ $job->id }}, {{ $job->amount ?? '0' }})"> <i class="bi bi-file-earmark-pdf me-1"></i> Generate Invoice </button>
                 <div class="modal fade" id="amountModal" tabindex="-1">
                     <div class="modal-dialog">
                         <form method="POST" action="{{ route('jobs.invoice.preview') }}"> @csrf <input type="hidden" name="job_id" id="job_id">
@@ -813,7 +831,7 @@
                             </div>
                         </form>
                     </div>
-                </div> @endif
+                </div>
 
                 @endif
 
