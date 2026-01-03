@@ -11,6 +11,22 @@ use App\Http\Controllers\CrewController;
 use App\Http\Controllers\EditorController;
 use App\Http\Controllers\IncomeController;
 
+use App\Http\Controllers\Auth\ForgotPasswordController;
+use App\Http\Controllers\Auth\ResetPasswordController;
+
+Route::get('/forgot-password', [ForgotPasswordController::class, 'show'])
+    ->name('password.request');
+
+Route::post('/forgot-password', [ForgotPasswordController::class, 'send'])
+    ->name('password.email');
+
+Route::get('/reset-password/{token}', [ResetPasswordController::class, 'show'])
+    ->name('password.reset');
+
+Route::post('/reset-password', [ResetPasswordController::class, 'update'])
+    ->name('password.update');
+
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes

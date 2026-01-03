@@ -68,6 +68,12 @@
 
                 <button type="submit" class="btn-login">Masuk</button>
             </form>
+            <div class="text-center mt-3">
+                <a href="{{ route('password.request') }}" class="text-decoration-none small">
+                    Lupa password?
+                </a>
+            </div>
+
 
             <div style="margin-top: 20px; font-size: 12px; color: #aaa;">
                 &copy; {{ date('Y') }} Izzati Computindo
@@ -91,4 +97,5 @@
     </script>
 
 </body>
+
 </html>
